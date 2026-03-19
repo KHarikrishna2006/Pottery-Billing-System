@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Bill History{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📋 {{ 'All Bills' if session.get('role') == 'admin' else 'My Bills' }}</h1>
+    <p class="page-sub">{{ bills|length }} bills found</p>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <form method="GET" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+    <div style="flex:1;min-width:180px">
+      <label class="form-label">Search Customer</label>
+      <input class="form-input" type="text" name="q" value="{{ search }}" placeholder="Customer name..."/>
+    </div>
+    <div>
+      <label class="form-label">Date</label>
+      <input class="form-input" type="date" name="date" value="{{ date_f }}"/>
+    </div>
+    <div style="display:flex;gap:8px;padding-bottom:2px">
+      <button class="btn btn-primary" type="submit">🔍 Search</button>
+      {% if search or date_f %}
+        <a href="{{ url_for('history') }}" class="btn btn-secondary">✕ Clear</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  {% if bills %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Bill No</th>
+          <th>Customer</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Items</th>
+          <th>Total</th>
+          {% if session.get('role') == 'admin' %}<th>By</th>{% endif %}
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bills %}
+        <tr>
+          <td><strong style="color:var(--accent)">{{ b.bill_number }}</strong></td>
+          <td>{{ b.customer_name }}</td>
+          <td>{{ b.date }}</td>
+          <td class="text-muted">{{ b.time }}</td>
+          <td><span class="badge badge-info">{{ b.bill_items|length }} items</span></td>
+          <td><strong>₹{{ "%.2f"|format(b.total_amount) }}</strong></td>
+          {% if session.get('role') == 'admin' %}
+            <td class="text-muted">{{ b.created_by or '—' }}</td>
+          {% endif %}
+          <td><a href="{{ url_for('view_bill', bid=b.id) }}" class="btn btn-sm btn-outline">👁️ View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><div>📋</div><p>No bills found</p></div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block title %}Bill {{ bill.bill_number }}{% endblock %}
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">🧾 {{ bill.bill_number }}</h1>
+    <p class="page-sub">{{ bill.date }} · {{ bill.time }} · by {{ bill.created_by }}</p>
+  </div>
+  <a href="{{ url_for('history') }}" class="btn btn-secondary">← Back</a>
+</div>
+
+<!-- Action buttons -->
+<div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+  <button class="btn btn-primary" onclick="downloadPDF()">⬇️ Download PDF</button>
+  <button class="btn btn-secondary" onclick="window.print()">🖨️ Print</button>
+  <button class="btn btn-success" id="waBtn" onclick="shareWhatsAppImage()">💬 Share on WhatsApp</button>
+</div>
+
+<!-- Bill card — this gets captured as PNG -->
+<div id="billCard" style="max-width:640px;margin:0 auto">
+  <div style="background:#fff;border:1px solid #e0e0e0;border-radius:16px;padding:28px;font-family:Georgia,serif">
+
+    <!-- Header -->
+    <div style="text-align:center;border-bottom:3px double #1a1a2e;padding-bottom:16px;margin-bottom:16px">
+      <div style="font-size:2rem;margin-bottom:4px">🏺</div>
+      <div style="font-size:1.4rem;font-weight:bold;color:#1a1a2e;letter-spacing:1px">AUTO POTTERY BILL</div>
+      <div style="font-size:.8rem;color:#888;margin-top:3px">HK.pvt.Ltd</div>
+    </div>
+
+    <!-- Meta -->
+    <div style="display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+      <div>
+        <div><strong>Bill No:</strong> <span style="color:#e94560;font-weight:700">{{ bill.bill_number }}</span></div>
+        <div style="margin-top:3px"><strong>Date:</strong> {{ bill.date }}</div>
+        <div><strong>Time:</strong> {{ bill.time }}</div>
+      </div>
+      <div style="text-align:right">
+        <div><strong>Customer:</strong> {{ bill.customer_name }}</div>
+        {% if bill.customer_phone %}<div><strong>Phone:</strong> {{ bill.customer_phone }}</div>{% endif %}
+        <div><strong>By:</strong> {{ bill.created_by }}</div>
+      </div>
+    </div>
+
+    <hr style="border:none;border-top:2px solid #eee;margin:12px 0"/>
+
+    <!-- Items table -->
+    <table style="width:100%;border-collapse:collapse;font-size:.88rem">
+      <thead>
+        <tr style="background:#1a1a2e;color:#fff">
+          <th style="padding:8px 10px;text-align:left">#</th>
+          <th style="padding:8px 10px;text-align:left">Item (Telugu)</th>
+          <th style="padding:8px 10px;text-align:left">English</th>
+          <th style="padding:8px 10px;text-align:right">Qty</th>
+          <th style="padding:8px 10px;text-align:right">Price (₹)</th>
+          <th style="padding:8px 10px;text-align:right">Total (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in bill.bill_items %}
+        <tr style="border-bottom:1px solid #f0f0f0;{% if loop.index is odd %}background:#fafafa;{% endif %}">
+          <td style="padding:9px 10px;color:#888">{{ loop.index }}</td>
+          <td style="padding:9px 10px;font-weight:700;font-size:.95rem">{{ item.telugu_name if item.telugu_name else item.name }}</td>
+          <td style="padding:9px 10px;color:#666;font-size:.82rem">{{ item.name }}</td>
+          <td style="padding:9px 10px;text-align:right">{{ item.quantity }}</td>
+          <td style="padding:9px 10px;text-align:right">{{ "%.2f"|format(item.price) }}</td>
+          <td style="padding:9px 10px;text-align:right;font-weight:700">{{ "%.2f"|format(item.total) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Balance row -->
+    {% if bill.balance and bill.balance > 0 %}
+    <div style="display:flex;justify-content:flex-end;margin-top:10px">
+      <div style="width:260px;display:flex;justify-content:space-between;padding:8px 14px;background:#fff3f3;border:1px solid #fcc;border-radius:8px;font-size:.88rem">
+        <span style="color:#e94560;font-weight:600">⚠️ Previous Balance</span>
+        <span style="color:#e94560;font-weight:700">₹{{ "%.2f"|format(bill.balance) }}</span>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Total -->
+    <div style="display:flex;justify-content:flex-end;margin-top:10px">
+      <div style="width:240px;background:linear-gradient(135deg,#1a1a2e,#0f3460);color:#fff;padding:12px 16px;border-radius:10px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:600">GRAND TOTAL</span>
+        <span style="font-size:1.25rem;font-weight:700;color:#ffd166">₹{{ "%.2f"|format(bill.total_amount) }}</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align:center;margin-top:20px;padding-top:14px;border-top:1px dashed #ddd;color:#888;font-style:italic;font-size:.85rem">
+      🙏 Thank you for your purchase! Visit us again.
+    </div>
+  </div>
+</div>
+
+<!-- WhatsApp loading overlay -->
+<div id="waOverlay" style="display:none;position:fixed;inset:0;background:rgba(26,26,46,.7);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:14px">
+  <div style="width:46px;height:46px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite"></div>
+  <div style="color:#fff;font-size:1rem;font-family:DM Sans,sans-serif">Preparing image...</div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var billData = {{ bill|tojson }};
+
+/* ── WhatsApp as PNG image ─────────────────────────────────────────────── */
+function shareWhatsAppImage() {
+  var overlay = document.getElementById('waOverlay');
+  overlay.style.display = 'flex';
+  var card = document.getElementById('billCard');
+
+  html2canvas(card, {
+    scale: 2,
+    backgroundColor: '#ffffff',
+    useCORS: true,
+    logging: false
+  }).then(function(canvas) {
+    overlay.style.display = 'none';
+    canvas.toBlob(function(blob) {
+      /* Try Web Share API (mobile) */
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'bill.png', { type: 'image/png' })] })) {
+        var file = new File([blob], 'bill-' + billData.bill_number + '.png', { type: 'image/png' });
+        navigator.share({
+          title: 'Bill ' + billData.bill_number,
+          text: 'AUTO POTTERY BILL - ' + billData.customer_name + ' - ₹' + billData.total_amount.toFixed(2),
+          files: [file]
+        }).catch(function(e) { fallbackWhatsApp(canvas); });
+      } else {
+        /* Desktop fallback: download image + open WhatsApp Web */
+        fallbackWhatsApp(canvas);
+      }
+    }, 'image/png');
+  }).catch(function(err) {
+    overlay.style.display = 'none';
+    alert('Could not generate image. Using text sharing instead.');
+    shareWhatsAppText();
+  });
+}
+
+function fallbackWhatsApp(canvas) {
+  /* 1. Auto-download the PNG */
+  var link = document.createElement('a');
+  link.download = 'bill-' + billData.bill_number + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+
+  /* 2. Open WhatsApp Web with a caption */
+  var msg = '🏺 *AUTO POTTERY BILL*\n📋 ' + billData.bill_number +
+            '\n👤 ' + billData.customer_name +
+            '\n💰 ₹' + billData.total_amount.toFixed(2) +
+            '\n\n_Image downloaded — attach it in WhatsApp!_';
+  setTimeout(function() {
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  }, 800);
+}
+
+function shareWhatsAppText() {
+  var msg = '*AUTO POTTERY BILL*\n*HK.pvt.Ltd*\n────────────────────\n';
+  msg += '📋 Bill: *' + billData.bill_number + '*\n';
+  msg += '📅 ' + billData.date + ' · ' + billData.time + '\n';
+  msg += '👤 Customer: *' + billData.customer_name + '*\n';
+  if (billData.customer_phone) msg += '📞 ' + billData.customer_phone + '\n';
+  msg += '────────────────────\n';
+  billData.bill_items.forEach(function(i) {
+    var name = i.telugu_name || i.name;
+    msg += '• ' + name + ' × ' + i.quantity + ' = ₹' + i.total.toFixed(2) + '\n';
+  });
+  msg += '────────────────────\n💰 *Total: ₹' + billData.total_amount.toFixed(2) + '*\n\n_Thank you! 🙏_';
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+/* ── PDF / Print ───────────────────────────────────────────────────────── */
+function downloadPDF() {
+  window.print();
+}
+</script>
+{% endblock %}

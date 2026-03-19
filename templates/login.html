@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — AUTO POTTERY BILL</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div style="font-size:2.6rem;margin-bottom:10px">🏺</div>
+      <h1>AUTO <span>POTTERY</span> BILL</h1>
+      <p>HK.pvt.Ltd · Billing System</p>
+    </div>
+
+    {% if error %}
+      <div class="alert alert-danger">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-input" type="text" name="username" placeholder="Enter your username" required autofocus/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div style="position:relative">
+          <input class="form-input" type="password" name="password" id="pwInput" placeholder="Enter your password" required style="padding-right:44px"/>
+          <button type="button" onclick="togglePw()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--muted)" id="eyeBtn">👁️</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:6px;justify-content:center" type="submit">🔑 Sign In</button>
+    </form>
+
+    <!-- <div class="login-hint">
+      <strong>Default Credentials</strong>
+      <div class="hint-row"><span class="badge badge-gold">Admin</span> admin / admin123</div>
+      <div class="hint-row"><span class="badge badge-info">Worker</span> worker / worker123</div>
+    </div> -->
+  </div>
+</div>
+<script>
+  function togglePw() {
+    var i=document.getElementById('pwInput'), b=document.getElementById('eyeBtn');
+    i.type = i.type==='password' ? 'text' : 'password';
+    b.textContent = i.type==='password' ? '👁️' : '🙈';
+  }
+</script>
+</body>
+</html>

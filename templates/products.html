@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Products{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">🏺 Products</h1>
+    <p class="page-sub">Add items with Telugu name + English pronunciation</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('addModal')">➕ Add Product</button>
+</div>
+
+<!-- Search -->
+<div class="card" style="margin-bottom:16px">
+  <form method="GET" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <input class="form-input" style="max-width:300px" type="text" name="q" value="{{ search }}" placeholder="🔍 Search by Telugu or English name..."/>
+    <button class="btn btn-secondary" type="submit">Search</button>
+    {% if search %}<a href="{{ url_for('products') }}" class="btn btn-secondary">✕ Clear</a>{% endif %}
+  </form>
+</div>
+
+<!-- Products table -->
+<div class="card">
+  {% if products %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Telugu Name</th><th>English Pronunciation</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td style="color:var(--muted)">{{ loop.index }}</td>
+          <td>
+            <span style="font-size:1.05rem;font-weight:700;color:var(--primary)">{{ p.telugu_name }}</span>
+          </td>
+          <td>
+            <span class="badge badge-purple" style="font-size:.78rem;padding:4px 12px">{{ p.english_name }}</span>
+          </td>
+          <td>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-sm btn-secondary" onclick="openEdit({{ p.id }}, '{{ p.telugu_name|e }}', '{{ p.english_name|e }}')">✏️ Edit</button>
+              <form method="POST" action="{{ url_for('delete_product', pid=p.id) }}" onsubmit="return confirm('Delete {{ p.english_name }}?')">
+                <button class="btn btn-sm btn-danger" type="submit">🗑️</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><div>🏺</div><p>No products yet. Add your first product!</p></div>
+  {% endif %}
+</div>
+
+<!-- Add Modal -->
+<div class="modal-backdrop" id="addModal" style="display:none" onclick="closeOnBackdrop(event,'addModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>➕ Add Product</h3>
+      <button class="btn-icon" onclick="closeModal('addModal')">✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('add_product') }}">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Telugu Name (తెలుగు పేరు)</label>
+          <input class="form-input" type="text" name="telugu_name"
+            placeholder="e.g. కుండ, మట్టి కూజా, పువ్వుల కుండ" required
+            style="font-size:1rem"/>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Type the name in Telugu script</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">English Pronunciation</label>
+          <input class="form-input" type="text" name="english_name"
+            placeholder="e.g. Kunda, Matti Kooja, Puvvula Kunda" required/>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">How it sounds in English</div>
+        </div>
+        <div style="background:rgba(233,69,96,.05);border:1px solid rgba(233,69,96,.15);border-radius:8px;padding:10px 12px;font-size:.8rem;color:var(--muted)">
+          💡 <strong>Note:</strong> Price and quantity are entered by the worker at the time of billing — no need to set them here.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">💾 Add Product</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-backdrop" id="editModal" style="display:none" onclick="closeOnBackdrop(event,'editModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>✏️ Edit Product</h3>
+      <button class="btn-icon" onclick="closeModal('editModal')">✕</button>
+    </div>
+    <form method="POST" id="editForm">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Telugu Name (తెలుగు పేరు)</label>
+          <input class="form-input" type="text" name="telugu_name" id="editTelugu" required style="font-size:1rem"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">English Pronunciation</label>
+          <input class="form-input" type="text" name="english_name" id="editEnglish" required/>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">💾 Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  function openModal(id) { document.getElementById(id).style.display='flex'; }
+  function closeModal(id) { document.getElementById(id).style.display='none'; }
+  function closeOnBackdrop(e,id) { if(e.target.classList.contains('modal-backdrop')) closeModal(id); }
+  function openEdit(id, telugu, english) {
+    document.getElementById('editForm').action = '/products/edit/'+id;
+    document.getElementById('editTelugu').value  = telugu;
+    document.getElementById('editEnglish').value = english;
+    openModal('editModal');
+  }
+</script>
+{% endblock %}

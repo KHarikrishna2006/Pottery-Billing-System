@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}All Bills{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📋 All Bills</h1>
+    <p class="page-sub">{{ bills|length }} bills</p>
+  </div>
+</div>
+<div class="card" style="margin-bottom:16px">
+  <form method="GET" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+    <div style="flex:1;min-width:180px">
+      <label class="form-label">Customer Name</label>
+      <input class="form-input" type="text" name="q" value="{{ search }}" placeholder="Search..."/>
+    </div>
+    <div>
+      <label class="form-label">Date</label>
+      <input class="form-input" type="date" name="date" value="{{ date_f }}"/>
+    </div>
+    <div style="display:flex;gap:8px;padding-bottom:2px">
+      <button class="btn btn-primary" type="submit">Search</button>
+      {% if search or date_f %}<a href="{{ url_for('admin_bills') }}" class="btn btn-secondary">✕ Clear</a>{% endif %}
+    </div>
+  </form>
+</div>
+<div class="card">
+  {% if bills %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Bill No</th><th>Customer</th><th>Date</th><th>Items</th><th>Total</th><th>By</th><th></th></tr></thead>
+      <tbody>
+        {% for b in bills %}
+        <tr>
+          <td><strong style="color:var(--clay)">{{ b.bill_number }}</strong></td>
+          <td>{{ b.customer_name }}</td>
+          <td>{{ b.created_at.strftime('%d %b %Y %I:%M %p') }}</td>
+          <td><span class="badge badge-info">{{ b.get_items()|length }}</span></td>
+          <td><strong>₹{{ "%.2f"|format(b.total_amount) }}</strong></td>
+          <td class="text-muted">{{ b.creator.username }}</td>
+          <td><a href="{{ url_for('view_bill', bid=b.id) }}" class="btn btn-sm btn-outline">👁️ View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><div>📋</div><p>No bills found</p></div>
+  {% endif %}
+</div>
+{% endblock %}

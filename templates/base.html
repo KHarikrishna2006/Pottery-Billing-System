@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Auto Pottery Bill{% endblock %} — AUTO POTTERY BILL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-brand">AUTO <span>POTTERY</span> BILL</div>
+      <div class="logo-sub">Billing System</div>
+    </div>
+    <nav class="sidebar-nav">
+      {% if session.get('role') == 'admin' %}
+        <div class="nav-section">Main</div>
+        <a href="{{ url_for('dashboard') }}"  class="nav-item {% if request.endpoint=='dashboard' %}active{% endif %}"><span class="ni">📊</span> Dashboard</a>
+        <a href="{{ url_for('billing') }}"    class="nav-item {% if request.endpoint=='billing' %}active{% endif %}"><span class="ni">🧾</span> New Bill</a>
+        <a href="{{ url_for('history') }}"    class="nav-item {% if request.endpoint=='history' %}active{% endif %}"><span class="ni">📋</span> All Bills</a>
+        <div class="nav-section">Manage</div>
+        <a href="{{ url_for('products') }}"   class="nav-item {% if request.endpoint=='products' %}active{% endif %}"><span class="ni">🏺</span> Products</a>
+        <a href="{{ url_for('users') }}"      class="nav-item {% if request.endpoint=='users' %}active{% endif %}"><span class="ni">👥</span> Users</a>
+      {% else %}
+        <div class="nav-section">Billing</div>
+        <a href="{{ url_for('billing') }}"  class="nav-item {% if request.endpoint=='billing' %}active{% endif %}"><span class="ni">🧾</span> New Bill</a>
+        <a href="{{ url_for('history') }}"  class="nav-item {% if request.endpoint=='history' %}active{% endif %}"><span class="ni">📋</span> My Bills</a>
+      {% endif %}
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar">{{ session.get('username','?')[0].upper() }}</div>
+        <div>
+          <div class="user-name">{{ session.get('username') }}</div>
+          <div class="user-role">{{ '👑 Admin' if session.get('role')=='admin' else '🧑 Worker' }}</div>
+        </div>
+      </div>
+      <a href="{{ url_for('logout') }}" class="btn btn-outline-danger" style="width:100%;text-align:center;justify-content:center">🚪 Logout</a>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center">
+        <button class="hamburger" onclick="openSidebar()">☰</button>
+        <span class="topbar-brand">AUTO <span>POTTERY</span> BILL</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="badge {{ 'badge-gold' if session.get('role')=='admin' else 'badge-info' }}">
+          {{ '👑 Admin' if session.get('role')=='admin' else '🧑 Worker' }}
+        </span>
+        <span style="font-size:.82rem;color:var(--muted)">{{ session.get('username') }}</span>
+      </div>
+    </header>
+    <main class="page-body">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+<script>
+  function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('open'); }
+  function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

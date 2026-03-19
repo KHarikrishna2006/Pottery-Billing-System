@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📊 Dashboard</h1>
+    <p class="page-sub">Welcome back, {{ session.get('username') }}! Here's today's overview.</p>
+  </div>
+</div>
+
+<div class="grid-4" style="margin-bottom:22px">
+  <div class="stat-card c-gold">
+    <div class="stat-icon gold">💰</div>
+    <div><div class="stat-label">Today's Revenue</div><div class="stat-value">₹{{ "%.0f"|format(today_revenue) }}</div></div>
+  </div>
+  <div class="stat-card c-red">
+    <div class="stat-icon red">🧾</div>
+    <div><div class="stat-label">Today's Bills</div><div class="stat-value">{{ today_bills }}</div></div>
+  </div>
+  <div class="stat-card c-blue">
+    <div class="stat-icon blue">📋</div>
+    <div><div class="stat-label">Total Bills</div><div class="stat-value">{{ total_bills }}</div></div>
+  </div>
+  <div class="stat-card c-green">
+    <div class="stat-icon green">🏺</div>
+    <div><div class="stat-label">Products</div><div class="stat-value">{{ total_products }}</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">🧾 Recent Bills</span>
+    <a href="{{ url_for('history') }}" class="btn btn-sm btn-secondary">View All →</a>
+  </div>
+  {% if recent_bills %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Bill No</th><th>Customer</th><th>Total</th><th>By</th><th>Date</th><th></th></tr></thead>
+      <tbody>
+        {% for b in recent_bills %}
+        <tr>
+          <td><strong style="color:var(--accent)">{{ b.bill_number }}</strong></td>
+          <td>{{ b.customer_name }}</td>
+          <td><strong>₹{{ "%.2f"|format(b.total_amount) }}</strong></td>
+          <td><span class="text-muted">{{ b.creator.username }}</span></td>
+          <td><span class="text-muted">{{ b.created_at.strftime('%d %b %I:%M %p') }}</span></td>
+          <td><a href="{{ url_for('view_bill', bid=b.id) }}" class="btn btn-sm btn-outline">👁️</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state" style="padding:40px 0"><div>🧾</div><p>No bills yet. Create your first bill!</p></div>
+  {% endif %}
+</div>
+{% endblock %}

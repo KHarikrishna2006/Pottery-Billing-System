@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block title %}New Bill{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">🧾 New Bill</h1>
+    <p class="page-sub">Select products → set price & quantity → generate</p>
+  </div>
+</div>
+
+<div class="billing-grid">
+  <!-- Left panel -->
+  <div>
+
+    <!-- Customer -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><span class="card-title">👤 Customer Details</span></div>
+      <div class="form-row">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Customer Name *</label>
+          <input class="form-input" type="text" id="customerName" placeholder="Enter customer name" oninput="updateSummary()"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Phone (optional)</label>
+          <input class="form-input" type="text" id="customerPhone" placeholder="+91 XXXXX XXXXX"/>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:9px 13px;background:var(--surface2);border-radius:8px;font-size:.83rem;color:var(--muted);border:1px solid var(--border)">
+        📅 <strong style="color:var(--text)">Date & Time:</strong> <span id="billDateTime">{{ now.strftime('%d %b %Y  %I:%M %p') }}</span>
+      </div>
+    </div>
+
+    <!-- Product grid -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header">
+        <span class="card-title">🏺 Select Products</span>
+        <input class="form-input" type="text" id="productFilter"
+          placeholder="🔍 Filter..." style="max-width:170px;margin:0;font-size:.85rem"
+          oninput="filterProducts()"/>
+      </div>
+      {% if products %}
+      <div id="productGrid" class="product-grid">
+        {% for p in products %}
+        <div class="product-tile"
+             id="tile-{{ p.id }}"
+             onclick="addToCart({{ p.id }}, '{{ p.telugu_name|e }}', '{{ p.english_name|e }}')"
+             data-name="{{ (p.telugu_name + ' ' + p.english_name)|lower }}">
+          <div class="tile-telugu">{{ p.telugu_name }}</div>
+          <div class="tile-english">{{ p.english_name }}</div>
+          <div class="tile-badge" id="badge-{{ p.id }}" style="display:none">0</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:28px 0">
+        <div>🏺</div><p>No products yet. Ask admin to add products.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Cart -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🛒 Cart</span>
+        <button class="btn btn-sm btn-secondary" onclick="clearCart()">🗑️ Clear</button>
+      </div>
+      <div id="cartEmpty" class="empty-state" style="padding:34px 0">
+        <div>🛒</div><p>Click any product above to add to cart</p>
+      </div>
+      <div id="cartTable" style="display:none">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Price/Unit (₹)</th>
+                <th>Total (₹)</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="cartBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Summary -->
+  <div>
+    <div class="card" style="position:sticky;top:70px">
+      <div class="card-header"><span class="card-title">💰 Bill Summary</span></div>
+      <div id="summaryItems" style="min-height:60px;margin-bottom:12px">
+        <p class="text-muted" style="font-size:.85rem">No items added yet</p>
+      </div>
+      <div class="divider"></div>
+
+      <!-- Balance amount -->
+      <div style="margin-bottom:12px">
+        <label class="form-label" style="margin-bottom:6px">💳 Previous Balance (if any)</label>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:.9rem;color:var(--muted);flex-shrink:0">₹</span>
+          <input class="form-input" type="number" min="0" step="0.01" id="balanceAmount"
+            placeholder="0.00" oninput="updateSummary()"
+            style="margin:0;font-size:.9rem"/>
+        </div>
+        <div id="balanceNote" style="display:none;font-size:.75rem;color:var(--danger);margin-top:4px">
+          ⚠️ Previous balance will be added to grand total
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="grand-total-box">
+        <span>Grand Total</span>
+        <span id="grandTotalDisplay">₹0.00</span>
+      </div>
+      <button class="btn btn-primary btn-lg" style="width:100%;margin-top:14px;justify-content:center"
+        onclick="generateBill()" id="generateBtn" disabled>
+        🧾 Generate Bill
+      </button>
+      <p id="billHint" style="font-size:.77rem;color:var(--danger);margin-top:8px;text-align:center;display:none">
+        ⚠️ Enter customer name and add items
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal-backdrop" id="successModal" style="display:none">
+  <div class="modal" style="max-width:580px">
+    <div style="background:linear-gradient(135deg,#06d6a0,#118ab2);padding:20px 24px;border-radius:16px 16px 0 0;text-align:center;color:#fff">
+      <div style="font-size:2.5rem;margin-bottom:6px">✅</div>
+      <h2 style="font-family:var(--font-display);font-size:1.3rem">Bill Generated!</h2>
+      <p style="font-size:.85rem;opacity:.9;margin-top:4px" id="successBillNo"></p>
+    </div>
+    <div class="modal-body">
+      <div class="bill-preview" id="billPreview"></div>
+      <div style="margin-top:18px">
+        <p style="font-size:.78rem;color:var(--muted);font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Share or Download:</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <button class="btn btn-primary" style="flex-direction:column;height:68px;gap:3px;font-size:.8rem;justify-content:center" onclick="downloadPDF()">
+            <span style="font-size:1.4rem">⬇️</span>PDF
+          </button>
+          <button class="btn btn-secondary" style="flex-direction:column;height:68px;gap:3px;font-size:.8rem;justify-content:center" onclick="printBill()">
+            <span style="font-size:1.4rem">🖨️</span>Print
+          </button>
+          <button class="btn btn-success" style="flex-direction:column;height:68px;gap:3px;font-size:.8rem;justify-content:center" onclick="shareWhatsApp()">
+            <span style="font-size:1.4rem">💬</span>WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <a href="{{ url_for('history') }}" class="btn btn-secondary">📋 History</a>
+      <button class="btn btn-primary" onclick="newBill()">🆕 New Bill</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/billing.js') }}"></script>
+{% endblock %}

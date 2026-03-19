@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">👤 User Management</h1>
+    <p class="page-sub">{{ users|length }} users registered</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('addModal')">➕ Add User</button>
+</div>
+
+{% if request.args.get('error') %}
+  <div class="alert alert-danger">{{ request.args.get('error') }}</div>
+{% endif %}
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Username</th><th>Role</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>
+            <strong>{{ u.username }}</strong>
+            {% if u.id == session.get('user_id') %}<span class="badge badge-clay" style="margin-left:8px">You</span>{% endif %}
+          </td>
+          <td><span class="badge {{ 'badge-admin' if u.role == 'admin' else 'badge-user' }}">{{ '👑 Admin' if u.role == 'admin' else '🧑 Worker' }}</span></td>
+          <td>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-sm btn-secondary" onclick="openEdit({{ u.id }}, '{{ u.username|e }}', '{{ u.role }}')">✏️ Edit</button>
+              {% if u.username != 'admin' and u.id != session.get('user_id') %}
+              <form method="POST" action="{{ url_for('delete_user', uid=u.id) }}" onsubmit="return confirm('Delete user {{ u.username }}?')">
+                <button class="btn btn-sm btn-danger" type="submit">🗑️ Delete</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal-backdrop" id="addModal" style="display:none" onclick="closeOnBackdrop(event,'addModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>➕ Add User</h3>
+      <button class="btn-icon" onclick="closeModal('addModal')">✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('add_user') }}">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input class="form-input" type="text" name="username" placeholder="Enter username" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" name="password" placeholder="Enter password" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-input" name="role">
+            <option value="user">🧑 Shop Worker</option>
+            <option value="admin">👑 Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">💾 Create User</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal-backdrop" id="editModal" style="display:none" onclick="closeOnBackdrop(event,'editModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>✏️ Edit User</h3>
+      <button class="btn-icon" onclick="closeModal('editModal')">✕</button>
+    </div>
+    <form method="POST" id="editForm">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input class="form-input" type="text" name="username" id="editUsername" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Password <span style="font-weight:400;color:var(--smoke)">(leave blank to keep)</span></label>
+          <input class="form-input" type="password" name="password" placeholder="Enter new password (optional)"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-input" name="role" id="editRole">
+            <option value="user">🧑 Shop Worker</option>
+            <option value="admin">👑 Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+  function closeOnBackdrop(e, id) { if (e.target.classList.contains('modal-backdrop')) closeModal(id); }
+  function openEdit(id, username, role) {
+    document.getElementById('editForm').action = '/users/edit/' + id;
+    document.getElementById('editUsername').value = username;
+    document.getElementById('editRole').value = role;
+    openModal('editModal');
+  }
+</script>
+{% endblock %}
