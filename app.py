@@ -6,8 +6,8 @@ from functools import wraps
 import json, os
 
 app = Flask(__name__)
-app.secret_key = 'autopotterybill-secret-2026'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pottery.db'
+app.secret_key = os.environ.get('SECRET_KEY', 'pottery-secret-2026')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///pottery.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
