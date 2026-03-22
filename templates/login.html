@@ -2,67 +2,57 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"/>
-  <title>Login — AUTO POTTERY BILL</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <title>Login — Auto Pottery Bill</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet"/>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={theme:{extend:{colors:{clay:{DEFAULT:'#8B4513'}}}}}</script>
-  <style>*{-webkit-tap-highlight-color:transparent;}input{font-size:16px !important;}</style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg);}
+    input{font-size:16px!important;}
+    .login-wrap{width:100%;max-width:380px;}
+  </style>
 </head>
-<body class="bg-[#1C1C1E] min-h-screen flex items-center justify-center p-4"
-      style="background-image:radial-gradient(ellipse at 30% 40%,rgba(255,149,0,.18) 0%,transparent 55%),radial-gradient(ellipse at 70% 70%,rgba(255,59,48,.12) 0%,transparent 55%)">
+<body>
 
-  <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden">
-    <!-- Header -->
-    <div class="bg-[#1C1C1E] px-8 py-8 text-center">
-      <div class="text-5xl mb-3">🏺</div>
-      <h1 class="text-2xl font-bold text-white" style="font-family:Georgia,serif">
-        AUTO <span class="text-orange-400">POTTERY</span> BILL
-      </h1>
-      <p class="text-white/40 text-sm mt-1">HK.pvt.Ltd · Billing System</p>
-    </div>
+<div class="login-wrap">
 
-    <!-- Form -->
-    <div class="px-8 py-6">
-      {% if error %}
-      <div class="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">⚠️ {{ error }}</div>
-      {% endif %}
+  <!-- Hero -->
+  <div class="float-up text-center mb-8">
+    <div style="width:64px;height:64px;border-radius:20px;background:var(--primary);display:inline-flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 8px 24px rgba(79,70,229,.35);margin-bottom:16px;">🏺</div>
+    <h1 style="font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1.6rem;font-weight:800;color:var(--text);line-height:1.2;letter-spacing:-.3px;">Auto Pottery Bill</h1>
+    <p style="color:var(--text3);font-size:.875rem;margin-top:5px;">HK.pvt.Ltd · Billing System</p>
+  </div>
 
-      <form method="POST" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Username</label>
-          <input name="username" type="text" required autofocus autocomplete="username"
-                 placeholder="Enter username"
-                 class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 outline-none transition-colors focus:border-orange-400 focus:ring-4 focus:ring-orange-50 placeholder-gray-300"/>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Password</label>
-          <div class="relative">
-            <input name="password" type="password" id="pw" required autocomplete="current-password"
-                   placeholder="Enter password"
-                   class="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl bg-white text-gray-900 outline-none transition-colors focus:border-orange-400 focus:ring-4 focus:ring-orange-50 placeholder-gray-300"/>
-            <button type="button" onclick="var i=document.getElementById('pw');i.type=i.type=='password'?'text':'password';"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg p-1">👁️</button>
-          </div>
-        </div>
-        <button type="submit"
-                class="w-full py-3.5 bg-[#8B4513] hover:bg-[#6B3410] text-white font-bold rounded-xl text-base transition-colors active:scale-95 mt-2">
-          🔑 Sign In
-        </button>
-      </form>
+  <!-- Card -->
+  <div class="float-up-2 c-card" style="border-radius:20px;padding:28px;">
 
-      <!-- Hint -->
-      <div class="mt-5 bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-500">
-        <p class="font-bold text-gray-700 mb-2">Default Credentials</p>
-        <div class="flex items-center gap-2 mb-1">
-          <span class="text-xs font-bold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Admin</span>
-          <span>admin / admin123</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Worker</span>
-          <span>worker / worker123</span>
+    {% if error %}
+    <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:10px 14px;color:#DC2626;font-size:.85rem;font-weight:500;margin-bottom:20px;">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <form method="POST" autocomplete="on">
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;">Username</label>
+        <input name="username" type="text" required autofocus autocomplete="username" placeholder="Enter your username"
+               class="c-input" style="width:100%;padding:12px 16px;border-radius:12px;font-size:.9rem;"/>
+      </div>
+      <div style="margin-bottom:24px;">
+        <label style="display:block;font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;">Password</label>
+        <div style="position:relative;">
+          <input name="password" type="password" id="pw" required autocomplete="current-password" placeholder="Enter your password"
+                 class="c-input" style="width:100%;padding:12px 44px 12px 16px;border-radius:12px;font-size:.9rem;"/>
+          <button type="button" onclick="var i=document.getElementById('pw');i.type=i.type=='password'?'text':'password';"
+                  style="position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;padding:3px;line-height:1;">👁️</button>
         </div>
       </div>
-    </div>
+      <button type="submit" class="btn-primary" style="width:100%;padding:13px;border-radius:12px;font-size:.95rem;font-weight:700;font-family:Inter,sans-serif;letter-spacing:.2px;">
+        Sign In →
+      </button>
+    </form>
+
+    <p class="float-up-3" style="text-align:center;font-size:.78rem;color:var(--text3);margin-top:18px;">Auto Pottery Bill &copy; HK.pvt.Ltd</p>
   </div>
+</div>
 </body>
 </html>

@@ -5,131 +5,150 @@
 {% endblock %}
 {% block content %}
 
-<div class="flex items-center justify-between mb-4 gap-3">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;">
   <div>
-    <h1 class="text-xl font-bold text-gray-900" style="font-family:Georgia,serif">🧾 Bill</h1>
-    <p class="text-xs text-gray-500 mt-0.5 break-all">{{ bill.bill_number }}</p>
+    <h1 class="font-display text-xl font-bold" style="color:var(--text);letter-spacing:-.3px;">Bill</h1>
+    <p style="font-size:.75rem;font-weight:600;color:var(--primary);margin-top:2px;">{{ bill.bill_number }}</p>
   </div>
-  <a href="{{ url_for('history') }}" class="px-4 py-2 border-2 border-gray-200 text-gray-600 font-bold rounded-xl text-sm flex-shrink-0">← Back</a>
+  <a href="{{ url_for('history') }}" class="c-subtle border" style="padding:8px 16px;border-radius:10px;font-size:.85rem;font-weight:600;color:var(--text2);text-decoration:none;">← Back</a>
 </div>
 
-<!-- Action buttons -->
-<div class="flex gap-2 mb-5 flex-wrap">
-  <button onclick="dlPDF()" class="flex-1 py-3 bg-[#8B4513] text-white font-bold rounded-xl text-sm active:scale-95 text-center">⬇️ PDF</button>
-  <button onclick="window.print()" class="flex-1 py-3 bg-gray-100 border border-gray-200 text-gray-700 font-bold rounded-xl text-sm text-center">🖨️ Print</button>
-  <button id="waBtn" onclick="waShare()" class="flex-1 py-3 bg-green-500 text-white font-bold rounded-xl text-sm active:scale-95 text-center">💬 WhatsApp</button>
+<!-- Share Actions -->
+<div style="display:flex;gap:8px;margin-bottom:20px;">
+  <button onclick="sharePDF()" style="flex:1;padding:12px;background:var(--total-bg);color:#fff;border:none;border-radius:12px;font-size:.82rem;font-weight:600;cursor:pointer;">⬇️ PDF</button>
+  <button onclick="window.print()" class="c-subtle border" style="flex:1;padding:12px;border-radius:12px;font-size:.82rem;font-weight:600;color:var(--text2);cursor:pointer;">🖨️ Print</button>
+  <button onclick="shareWA()" style="flex:1;padding:12px;background:#25D366;color:#fff;border:none;border-radius:12px;font-size:.82rem;font-weight:600;cursor:pointer;">💬 WhatsApp</button>
 </div>
 
-<!-- Bill Card -->
-<div id="billCard" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
-  <!-- Header -->
-  <div class="text-center border-b-4 border-double border-gray-800 pb-4 mb-4">
-    <p class="text-3xl mb-2">🏺</p>
-    <h2 class="text-xl font-bold text-gray-900" style="font-family:Georgia,serif">AUTO POTTERY BILL</h2>
-    <p class="text-sm text-gray-500 mt-1">HK.pvt.Ltd</p>
+<!-- BILL CARD — white background for proper WA screenshot -->
+<div id="billCard" style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);">
+  <div style="padding:24px 24px 20px;text-align:center;border-bottom:3px double #0F172A;">
+    <h2 style="font-family:Georgia,'Times New Roman',serif;font-size:1.5rem;font-weight:800;color:#0F172A;letter-spacing:.5px;margin:0;">AUTO POTTERY BILL</h2>
+    <p style="font-size:.8rem;color:#94A3B8;margin:5px 0 0;">HK.pvt.Ltd</p>
   </div>
 
-  <!-- Meta info -->
-  <div class="space-y-1.5 text-sm mb-4 bg-gray-50 rounded-xl p-3">
-    <div class="flex justify-between gap-2 flex-wrap">
-      <span class="text-gray-500">Bill No</span>
-      <span class="font-bold text-[#8B4513] break-all">{{ bill.bill_number }}</span>
+  <div style="padding:20px 24px;">
+    <!-- Meta -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <p style="font-weight:800;font-size:.9rem;color:#0F172A;font-family:monospace;margin:0;">{{ bill.bill_number }}</p>
+        <p style="font-size:.9rem;color:#0F172A;margin:5px 0 0;"><strong>Customer:</strong> {{ bill.customer_name }}</p>
+        {% if bill.customer_phone %}<p style="font-size:.8rem;color:#475569;margin:3px 0 0;">📞 {{ bill.customer_phone }}</p>{% endif %}
+      </div>
+      <p style="font-size:.8rem;color:#94A3B8;text-align:right;margin:0;white-space:nowrap;">{{ bill.date }} · {{ bill.time }}</p>
     </div>
-    <div class="flex justify-between gap-2">
-      <span class="text-gray-500">Date</span>
-      <span class="font-medium">{{ bill.date }}</span>
-    </div>
-    <div class="flex justify-between gap-2">
-      <span class="text-gray-500">Time</span>
-      <span class="font-medium">{{ bill.time }}</span>
-    </div>
-    <div class="flex justify-between gap-2 flex-wrap">
-      <span class="text-gray-500">Customer</span>
-      <span class="font-bold break-words text-right">{{ bill.customer_name }}</span>
-    </div>
-    {% if bill.customer_phone %}
-    <div class="flex justify-between gap-2">
-      <span class="text-gray-500">Phone</span>
-      <span class="font-medium">{{ bill.customer_phone }}</span>
-    </div>
-    {% endif %}
-    <div class="flex justify-between gap-2">
-      <span class="text-gray-500">Served by</span>
-      <span class="font-medium">{{ bill.created_by }}</span>
-    </div>
-  </div>
 
-  <!-- Items as cards -->
-  <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Items</p>
-  <div class="space-y-2 mb-4">
+    <!-- Table header -->
+    <div style="border-top:1.5px solid #CBD5E1;"></div>
+    <div style="display:flex;padding:8px 0;border-bottom:1px solid #E2E8F0;">
+      <span style="flex:3;font-size:.7rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.6px;">Item</span>
+      <span style="flex:1;text-align:center;font-size:.7rem;font-weight:700;color:#94A3B8;text-transform:uppercase;">Qty</span>
+      <span style="flex:1.1;text-align:right;font-size:.7rem;font-weight:700;color:#94A3B8;text-transform:uppercase;">Price</span>
+      <span style="flex:1.1;text-align:right;font-size:.7rem;font-weight:700;color:#94A3B8;text-transform:uppercase;">Total</span>
+    </div>
+
+    <!-- Items -->
     {% for item in bill.bill_items %}
-    <div class="border border-gray-200 rounded-xl p-3">
-      <div class="flex justify-between items-start gap-2 mb-1">
-        <div class="min-w-0">
-          <p class="font-bold text-gray-900 break-words">{{ item.telugu_name if item.telugu_name else item.name }}</p>
-          <p class="text-xs text-gray-400">{{ item.name }}</p>
-        </div>
-        <p class="font-bold text-[#8B4513] text-base flex-shrink-0">₹{{ "%.2f"|format(item.total) }}</p>
-      </div>
-      <div class="flex gap-4 text-xs text-gray-500 border-t border-gray-100 pt-1.5 mt-1.5">
-        <span>Qty: <strong>{{ item.quantity }}</strong></span>
-        <span>Price/unit: <strong>₹{{ "%.2f"|format(item.price) }}</strong></span>
-      </div>
+    <div style="display:flex;align-items:center;padding:11px 0;border-bottom:1px solid #F1F5F9;">
+      <span style="flex:3;font-size:.88rem;color:#0F172A;font-weight:500;">
+        {{ item.telugu_name if item.telugu_name else item.name }}
+        <span style="color:#94A3B8;font-size:.75rem;">({{ item.name }})</span>
+      </span>
+      <span style="flex:1;text-align:center;font-size:.88rem;color:#475569;">{{ item.quantity }}</span>
+      <span style="flex:1.1;text-align:right;font-size:.88rem;color:#475569;">₹{{ "%.2f"|format(item.price) }}</span>
+      <span style="flex:1.1;text-align:right;font-size:.88rem;font-weight:700;color:#0F172A;">₹{{ "%.2f"|format(item.total) }}</span>
     </div>
     {% endfor %}
-  </div>
 
-  {% if bill.balance and bill.balance > 0 %}
-  <div class="flex justify-between items-center p-3 bg-red-50 border border-red-200 rounded-xl mb-3">
-    <span class="text-red-500 font-bold text-sm">⚠️ Previous Balance</span>
-    <span class="text-red-600 font-bold">₹{{ "%.2f"|format(bill.balance) }}</span>
-  </div>
-  {% endif %}
+    <!-- Balance -->
+    {% if bill.balance and bill.balance > 0 %}
+    <div style="display:flex;align-items:center;padding:11px 0;border-bottom:1px solid #F1F5F9;margin:0 -24px;padding-left:24px;padding-right:24px;">
+      <span style="flex:3;font-size:.88rem;color:#EF4444;font-weight:600;">⚠️ Previous Balance</span>
+      <span style="flex:1;"></span><span style="flex:1.1;"></span>
+      <span style="flex:1.1;text-align:right;font-size:.88rem;font-weight:700;color:#EF4444;">₹{{ "%.2f"|format(bill.balance) }}</span>
+    </div>
+    {% endif %}
 
-  <!-- Grand total -->
-  <div class="bg-gray-900 rounded-xl px-4 py-4 flex justify-between items-center">
-    <span class="text-white font-bold">GRAND TOTAL</span>
-    <span class="text-orange-400 font-bold text-xl" style="font-family:Georgia,serif">₹{{ "%.2f"|format(bill.total_amount) }}</span>
-  </div>
+    <!-- Grand Total -->
+    <div style="margin:16px -24px 0;background:#0F172A;border-radius:0;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="color:#FFFFFF;font-weight:800;font-size:1.1rem;letter-spacing:.3px;">Grand Total</span>
+      <span style="color:#FBBF24;font-weight:800;font-size:1.5rem;font-family:Georgia,serif;letter-spacing:-.5px;">₹{{ "%.2f"|format(bill.total_amount) }}</span>
+    </div>
 
-  <div class="text-center mt-4 pt-4 border-t border-dashed border-gray-300 text-gray-400 italic text-sm">
-    🙏 Thank you for your purchase!
+    <p style="text-align:center;font-size:.82rem;color:#94A3B8;font-style:italic;margin:16px 0 8px;">🙏 Thank you!</p>
   </div>
 </div>
 
 <!-- Loading overlay -->
-<div id="waOv" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center flex-col gap-4">
-  <div class="w-12 h-12 border-4 border-white/30 border-t-white rounded-full spin"></div>
-  <p class="text-white font-medium">Preparing image...</p>
+<div id="waOv" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
+  <div class="spin" style="width:44px;height:44px;border:4px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;"></div>
+  <p style="color:#fff;font-size:.9rem;font-weight:500;">Preparing image...</p>
 </div>
 
 {% endblock %}
 {% block scripts %}
 <script>
-var bd={{ bill|tojson }};
-function dlPDF(){window.print();}
-function waShare(){
-  var ov=document.getElementById('waOv');ov.classList.remove('hidden');
-  html2canvas(document.getElementById('billCard'),{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false}).then(function(canvas){
-    ov.classList.add('hidden');
+var bd = {{ bill|tojson }};
+
+function sharePDF(){window.print();}
+
+function shareWA(){
+  var ov = document.getElementById('waOv');
+  ov.style.display = 'flex';
+
+  html2canvas(document.getElementById('billCard'), {
+    scale: 3,
+    backgroundColor: '#FFFFFF',   /* force solid white — fixes transparent/washed issue */
+    useCORS: true,
+    logging: false,
+    allowTaint: true,
+    imageTimeout: 0
+  }).then(function(canvas){
+    ov.style.display = 'none';
     canvas.toBlob(function(blob){
-      var file=new File([blob],'bill-'+bd.bill_number+'.png',{type:'image/png'});
-      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-        navigator.share({title:'Bill '+bd.bill_number,text:'AUTO POTTERY BILL · ₹'+bd.total_amount.toFixed(2),files:[file]}).catch(function(){fbWA(canvas);});
-      }else{fbWA(canvas);}
-    },'image/png');
-  }).catch(function(){ov.classList.add('hidden');waText();});
+      var file = new File([blob], 'bill-' + bd.bill_number + '.png', {type:'image/png'});
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({
+          title: 'Bill ' + bd.bill_number,
+          text: 'AUTO POTTERY BILL · ₹' + bd.total_amount.toFixed(2),
+          files: [file]
+        }).catch(function(){ downloadAndWA(canvas); });
+      } else {
+        downloadAndWA(canvas);
+      }
+    }, 'image/png', 1.0);
+  }).catch(function(){
+    ov.style.display = 'none';
+    waText();
+  });
 }
-function fbWA(canvas){
-  var a=document.createElement('a');a.download='bill-'+bd.bill_number+'.png';a.href=canvas.toDataURL('image/png');a.click();
-  setTimeout(function(){window.open('https://wa.me/?text='+encodeURIComponent('AUTO POTTERY BILL\n'+bd.bill_number+'\n'+bd.customer_name+'\n₹'+bd.total_amount.toFixed(2)+'\n\nAttach downloaded image!'),'_blank');},800);
+
+function downloadAndWA(canvas){
+  /* Download image first */
+  var a = document.createElement('a');
+  a.download = 'bill-' + bd.bill_number + '.png';
+  a.href = canvas.toDataURL('image/png', 1.0);
+  a.click();
+  /* Open WA after short delay */
+  setTimeout(function(){
+    var msg = 'AUTO POTTERY BILL\n' + bd.bill_number + '\n' + bd.customer_name + '\n₹' + bd.total_amount.toFixed(2) + '\n\n(Attach the downloaded image)';
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  }, 1000);
 }
+
 function waText(){
-  var msg='*AUTO POTTERY BILL*\n*HK.pvt.Ltd*\n────────────\n📋 '+bd.bill_number+'\n📅 '+bd.date+' · '+bd.time+'\n👤 '+bd.customer_name+'\n────────────\n';
-  bd.bill_items.forEach(function(i){msg+='• '+(i.telugu_name||i.name)+' × '+i.quantity+' = ₹'+i.total.toFixed(2)+'\n';});
-  if(bd.balance&&bd.balance>0)msg+='⚠️ Balance = ₹'+bd.balance.toFixed(2)+'\n';
-  msg+='────────────\n💰 *Total: ₹'+bd.total_amount.toFixed(2)+'*\n\n_Thank you! 🙏_';
-  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+  var msg = '*AUTO POTTERY BILL*\n────────────\n' + bd.bill_number + '\n' + bd.customer_name + '\n────────────\n';
+  bd.bill_items.forEach(function(i){ msg += '• ' + (i.telugu_name||i.name) + ' ×' + i.quantity + ' = ₹' + i.total.toFixed(2) + '\n'; });
+  if(bd.balance > 0) msg += '⚠️ Balance = ₹' + bd.balance.toFixed(2) + '\n';
+  msg += '────────────\n*Total: ₹' + bd.total_amount.toFixed(2) + '*\n🙏 Thank you!';
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
+
+/* Fix time — show real current time on page load */
+(function(){
+  var el = document.getElementById('billTimeDisplay');
+  if(!el) return;
+  /* Time is already set from server, keep as is */
+})();
 </script>
 {% endblock %}

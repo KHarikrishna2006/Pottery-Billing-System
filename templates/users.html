@@ -2,39 +2,28 @@
 {% block title %}Users{% endblock %}
 {% block content %}
 <div class="flex items-center justify-between mb-4 gap-3">
-  <div>
-    <h1 class="text-xl font-bold text-gray-900" style="font-family:Georgia,serif">👥 Users</h1>
-    <p class="text-xs text-gray-500">{{ users|length }} registered</p>
-  </div>
-  <button onclick="openM('addM')" class="px-4 py-2.5 bg-[#8B4513] text-white font-bold rounded-xl text-sm active:scale-95 flex-shrink-0">➕ Add</button>
+  <div><h1 class="font-display text-xl font-bold" style="color:var(--primary)">Users</h1><p class="text-xs mt-0.5" style="color:var(--text3)">{{ users|length }} registered</p></div>
+  <button onclick="openM('addM')" class="btn-clay px-4 py-2.5 font-semibold rounded-xl text-sm active:scale-95 flex-shrink-0">➕ Add</button>
 </div>
-
-{% if request.args.get('error') %}
-<div class="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">{{ request.args.get('error') }}</div>
-{% endif %}
-
-<div class="space-y-3">
+{% if request.args.get('error') %}<div class="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">{{ request.args.get('error') }}</div>{% endif %}
+<div class="space-y-2.5">
   {% for u in users %}
-  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 flex items-center gap-3">
-    <div class="w-11 h-11 rounded-full bg-gradient-to-br from-red-400 to-orange-400 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-      {{ u.username[0].upper() }}
-    </div>
+  <div class="c-card border rounded-2xl p-4 flex items-center gap-3">
+    <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0" style="background:var(--primary-bg);color:var(--primary)">{{ u.username[0].upper() }}</div>
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2 flex-wrap">
-        <span class="font-bold text-gray-800">{{ u.username }}</span>
-        {% if u.id==session.get('user_id') %}<span class="text-xs bg-orange-100 text-orange-700 font-bold px-2 py-0.5 rounded-full">You</span>{% endif %}
+        <span class="font-semibold" style="color:var(--text)">{{ u.username }}</span>
+        {% if u.id==session.get('user_id') %}<span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background:var(--primary-bg);color:var(--primary)">You</span>{% endif %}
       </div>
-      <span class="inline-block mt-1 text-xs font-bold px-2.5 py-1 rounded-full
-        {% if u.role=='admin' %}bg-orange-100 text-orange-700{% else %}bg-blue-100 text-blue-700{% endif %}">
+      <span class="inline-block mt-1 text-xs font-medium px-2.5 py-0.5 rounded-full c-tag border">
         {{ '👑 Admin' if u.role=='admin' else '🧑 Worker' }}
       </span>
     </div>
     <div class="flex gap-2 flex-shrink-0">
-      <button onclick="openEdit({{u.id}},'{{u.username|e}}','{{u.role}}')"
-              class="w-10 h-10 bg-gray-100 border border-gray-200 text-gray-600 rounded-xl text-base flex items-center justify-center">✏️</button>
+      <button onclick="openEdit({{u.id}},'{{u.username|e}}','{{u.role}}')" class="w-9 h-9 c-subtle border rounded-xl flex items-center justify-center text-sm active:scale-95" style="color:var(--text2)">✏️</button>
       {% if u.username!='admin' and u.id!=session.get('user_id') %}
       <form method="POST" action="{{ url_for('delete_user',uid=u.id) }}" onsubmit="return confirm('Delete {{ u.username }}?')">
-        <button type="submit" class="w-10 h-10 bg-red-50 border border-red-200 text-red-500 rounded-xl text-base flex items-center justify-center">🗑️</button>
+        <button type="submit" class="w-9 h-9 rounded-xl flex items-center justify-center text-sm active:scale-95" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#ef4444;">🗑️</button>
       </form>
       {% endif %}
     </div>
@@ -42,45 +31,52 @@
   {% endfor %}
 </div>
 
-<!-- Add Modal -->
-<div id="addM" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center" onclick="if(event.target===this)closeM('addM')">
-  <div class="modal-anim bg-white w-full rounded-t-3xl" style="max-height:90vh;overflow-y:auto;">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-      <h3 class="font-bold text-gray-800 text-lg" style="font-family:Georgia,serif">➕ Add User</h3>
-      <button onclick="closeM('addM')" class="w-8 h-8 bg-gray-100 rounded-full text-gray-500 text-sm flex items-center justify-center">✕</button>
+{% macro modal_body(id, title) %}
+<div id="{{ id }}" class="hidden fixed inset-0 c-modal-bg backdrop-blur-sm z-50 flex items-end justify-center" onclick="if(event.target===this)closeM('{{ id }}')">
+  <div class="modal-anim c-surface w-full rounded-t-3xl" style="max-height:90vh;overflow-y:auto;">
+    <div class="flex items-center justify-between px-5 py-4 border-b c-divider">
+      <h3 class="font-display font-bold" style="color:var(--text)">{{ title }}</h3>
+      <button onclick="closeM('{{ id }}')" class="w-8 h-8 c-subtle border rounded-full flex items-center justify-center text-sm" style="color:var(--text2)">✕</button>
+    </div>
+{% endmacro %}
+
+<div id="addM" class="hidden fixed inset-0 c-modal-bg backdrop-blur-sm z-50 flex items-end justify-center" onclick="if(event.target===this)closeM('addM')">
+  <div class="modal-anim c-surface w-full rounded-t-3xl" style="max-height:90vh;overflow-y:auto;">
+    <div class="flex items-center justify-between px-5 py-4 border-b c-divider">
+      <h3 class="font-display font-bold" style="color:var(--text)">Add User</h3>
+      <button onclick="closeM('addM')" class="w-8 h-8 c-subtle border rounded-full flex items-center justify-center text-sm" style="color:var(--text2)">✕</button>
     </div>
     <form method="POST" action="{{ url_for('add_user') }}" class="p-5 space-y-4">
-      <div><label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Username</label><input name="username" type="text" required placeholder="Enter username" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl outline-none focus:border-[#8B4513] focus:ring-4 focus:ring-orange-50 placeholder-gray-300 transition-colors"/></div>
-      <div><label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Password</label><input name="password" type="password" required placeholder="Enter password" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl outline-none focus:border-[#8B4513] focus:ring-4 focus:ring-orange-50 placeholder-gray-300 transition-colors"/></div>
-      <div><label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Role</label>
-        <select name="role" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl outline-none focus:border-[#8B4513] bg-white transition-colors">
+      <div><label class="block text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:var(--text3)">Username</label><input name="username" type="text" required placeholder="Enter username" class="c-input w-full px-4 py-3.5 rounded-xl outline-none transition-all"/></div>
+      <div><label class="block text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:var(--text3)">Password</label><input name="password" type="password" required placeholder="Enter password" class="c-input w-full px-4 py-3.5 rounded-xl outline-none transition-all"/></div>
+      <div><label class="block text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:var(--text3)">Role</label>
+        <select name="role" class="c-input w-full px-4 py-3.5 rounded-xl outline-none transition-all">
           <option value="user">🧑 Shop Worker</option><option value="admin">👑 Admin</option>
         </select></div>
       <div class="flex gap-3 pb-4">
-        <button type="button" onclick="closeM('addM')" class="flex-1 py-3 border-2 border-gray-200 text-gray-600 font-bold rounded-xl">Cancel</button>
-        <button type="submit" class="flex-1 py-3 bg-[#8B4513] text-white font-bold rounded-xl active:scale-95">💾 Create</button>
+        <button type="button" onclick="closeM('addM')" class="flex-1 py-3.5 c-subtle border font-semibold rounded-xl" style="color:var(--text2)">Cancel</button>
+        <button type="submit" class="btn-clay flex-1 py-3.5 font-semibold rounded-xl active:scale-95">💾 Create</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Edit Modal -->
-<div id="editM" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center" onclick="if(event.target===this)closeM('editM')">
-  <div class="modal-anim bg-white w-full rounded-t-3xl" style="max-height:90vh;overflow-y:auto;">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-      <h3 class="font-bold text-gray-800 text-lg" style="font-family:Georgia,serif">✏️ Edit User</h3>
-      <button onclick="closeM('editM')" class="w-8 h-8 bg-gray-100 rounded-full text-gray-500 text-sm flex items-center justify-center">✕</button>
+<div id="editM" class="hidden fixed inset-0 c-modal-bg backdrop-blur-sm z-50 flex items-end justify-center" onclick="if(event.target===this)closeM('editM')">
+  <div class="modal-anim c-surface w-full rounded-t-3xl" style="max-height:90vh;overflow-y:auto;">
+    <div class="flex items-center justify-between px-5 py-4 border-b c-divider">
+      <h3 class="font-display font-bold" style="color:var(--text)">Edit User</h3>
+      <button onclick="closeM('editM')" class="w-8 h-8 c-subtle border rounded-full flex items-center justify-center text-sm" style="color:var(--text2)">✕</button>
     </div>
     <form method="POST" id="editF" class="p-5 space-y-4">
-      <div><label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Username</label><input name="username" id="eU" type="text" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl outline-none focus:border-[#8B4513] focus:ring-4 focus:ring-orange-50 transition-colors"/></div>
-      <div><label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">New Password <span class="font-normal text-gray-400">(blank = keep)</span></label><input name="password" type="password" placeholder="Optional" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl outline-none focus:border-[#8B4513] focus:ring-4 focus:ring-orange-50 placeholder-gray-300 transition-colors"/></div>
-      <div><label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Role</label>
-        <select name="role" id="eR" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl outline-none focus:border-[#8B4513] bg-white transition-colors">
+      <div><label class="block text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:var(--text3)">Username</label><input name="username" id="eU" type="text" required class="c-input w-full px-4 py-3.5 rounded-xl outline-none transition-all"/></div>
+      <div><label class="block text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:var(--text3)">New Password <span style="font-weight:400;color:var(--text3)">(blank = keep)</span></label><input name="password" type="password" placeholder="Optional" class="c-input w-full px-4 py-3.5 rounded-xl outline-none transition-all"/></div>
+      <div><label class="block text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:var(--text3)">Role</label>
+        <select name="role" id="eR" class="c-input w-full px-4 py-3.5 rounded-xl outline-none transition-all">
           <option value="user">🧑 Shop Worker</option><option value="admin">👑 Admin</option>
         </select></div>
       <div class="flex gap-3 pb-4">
-        <button type="button" onclick="closeM('editM')" class="flex-1 py-3 border-2 border-gray-200 text-gray-600 font-bold rounded-xl">Cancel</button>
-        <button type="submit" class="flex-1 py-3 bg-[#8B4513] text-white font-bold rounded-xl active:scale-95">💾 Save</button>
+        <button type="button" onclick="closeM('editM')" class="flex-1 py-3.5 c-subtle border font-semibold rounded-xl" style="color:var(--text2)">Cancel</button>
+        <button type="submit" class="btn-clay flex-1 py-3.5 font-semibold rounded-xl active:scale-95">💾 Save</button>
       </div>
     </form>
   </div>

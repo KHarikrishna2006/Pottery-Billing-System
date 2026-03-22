@@ -1,72 +1,74 @@
 {% extends 'base.html' %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<div class="mb-4">
-  <h1 class="text-xl font-bold text-gray-900" style="font-family:Georgia,serif">📊 Dashboard</h1>
-  <p class="text-xs text-gray-500 mt-0.5">Welcome back, {{ session.get('username') }}!</p>
+
+<div class="mb-6">
+  <h1 class="font-display text-2xl font-bold" style="color:var(--text);letter-spacing:-.3px">Dashboard</h1>
+  <p class="text-sm mt-1" style="color:var(--text3)">Good day, <strong style="color:var(--text2)">{{ session.get('username') }}</strong> 👋</p>
 </div>
 
-<!-- Stat cards 2x2 -->
-<div class="grid grid-cols-2 gap-3 mb-4">
-  <div class="bg-white rounded-2xl border border-gray-200 p-3 shadow-sm border-l-4 border-l-orange-400">
-    <div class="flex items-center gap-2 mb-1">
-      <span class="text-xl">💰</span>
-      <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Revenue</p>
-    </div>
-    <p class="text-2xl font-bold text-gray-900 break-all" style="font-family:Georgia,serif">₹{{ "%.0f"|format(today_revenue) }}</p>
-    <p class="text-xs text-gray-400 mt-0.5">Today</p>
+<!-- Stat Cards -->
+<div class="grid grid-cols-2 gap-3 mb-5">
+  <div class="stat-card">
+    <div class="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style="background:#FEF3C7">💰</div>
+    <p class="section-label mb-1">Today Revenue</p>
+    <p class="font-display font-bold text-2xl" style="color:var(--text);letter-spacing:-.5px">₹{{ "%.0f"|format(today_revenue) }}</p>
   </div>
-  <div class="bg-white rounded-2xl border border-gray-200 p-3 shadow-sm border-l-4 border-l-red-400">
-    <div class="flex items-center gap-2 mb-1">
-      <span class="text-xl">🧾</span>
-      <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Bills</p>
-    </div>
-    <p class="text-2xl font-bold text-gray-900" style="font-family:Georgia,serif">{{ today_bills }}</p>
-    <p class="text-xs text-gray-400 mt-0.5">Today</p>
+  <div class="stat-card">
+    <div class="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style="background:#EEF2FF">🧾</div>
+    <p class="section-label mb-1">Today Bills</p>
+    <p class="font-display font-bold text-2xl" style="color:var(--text);letter-spacing:-.5px">{{ today_bills }}</p>
   </div>
-  <div class="bg-white rounded-2xl border border-gray-200 p-3 shadow-sm border-l-4 border-l-blue-400">
-    <div class="flex items-center gap-2 mb-1">
-      <span class="text-xl">📋</span>
-      <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Total Bills</p>
-    </div>
-    <p class="text-2xl font-bold text-gray-900" style="font-family:Georgia,serif">{{ total_bills }}</p>
-    <p class="text-xs text-gray-400 mt-0.5">All time</p>
+  <div class="stat-card">
+    <div class="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style="background:#ECFDF5">📋</div>
+    <p class="section-label mb-1">Total Bills</p>
+    <p class="font-display font-bold text-2xl" style="color:var(--text);letter-spacing:-.5px">{{ total_bills }}</p>
   </div>
-  <div class="bg-white rounded-2xl border border-gray-200 p-3 shadow-sm border-l-4 border-l-green-400">
-    <div class="flex items-center gap-2 mb-1">
-      <span class="text-xl">🏺</span>
-      <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Products</p>
-    </div>
-    <p class="text-2xl font-bold text-gray-900" style="font-family:Georgia,serif">{{ total_products }}</p>
-    <p class="text-xs text-gray-400 mt-0.5">In catalog</p>
+  <div class="stat-card">
+    <div class="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style="background:#FFF7ED">🏺</div>
+    <p class="section-label mb-1">Products</p>
+    <p class="font-display font-bold text-2xl" style="color:var(--text);letter-spacing:-.5px">{{ total_products }}</p>
   </div>
 </div>
 
-<!-- Recent Bills as cards -->
-<div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-  <div class="flex items-center justify-between px-4 py-3.5 border-b border-gray-100">
-    <h2 class="font-bold text-gray-800 text-sm" style="font-family:Georgia,serif">🧾 Recent Bills</h2>
-    <a href="{{ url_for('history') }}" class="text-xs text-[#8B4513] font-semibold">View All →</a>
+<!-- Quick Actions -->
+<div class="grid grid-cols-3 gap-3 mb-5">
+  <a href="{{ url_for('billing') }}" class="btn-primary flex flex-col items-center gap-2 py-4 rounded-2xl font-semibold text-xs active:scale-95 text-center" style="text-decoration:none;border-radius:16px;">
+    <span class="text-2xl">🧾</span><span data-i18n="nav_newbill">New Bill</span>
+  </a>
+  <a href="{{ url_for('products') }}" class="flex flex-col items-center gap-2 py-4 rounded-2xl font-semibold text-xs active:scale-95 text-center c-card" style="text-decoration:none;border-radius:16px;color:var(--text2)">
+    <span class="text-2xl">🏺</span><span data-i18n="nav_products">Products</span>
+  </a>
+  <a href="{{ url_for('history') }}" class="flex flex-col items-center gap-2 py-4 rounded-2xl font-semibold text-xs active:scale-95 text-center c-card" style="text-decoration:none;border-radius:16px;color:var(--text2)">
+    <span class="text-2xl">📋</span><span data-i18n="nav_allbills">All Bills</span>
+  </a>
+</div>
+
+<!-- Recent Bills -->
+<div class="c-card" style="border-radius:16px;overflow:hidden;">
+  <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid var(--border)">
+    <p class="font-semibold text-sm" style="color:var(--text)">Recent Bills</p>
+    <a href="{{ url_for('history') }}" class="text-xs font-semibold" style="color:var(--primary)">View all →</a>
   </div>
   {% if recent_bills %}
-  <div class="divide-y divide-gray-100">
     {% for b in recent_bills %}
-    <a href="{{ url_for('view_bill',bid=b.id) }}" class="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 active:bg-gray-100 transition-colors">
+    <a href="{{ url_for('view_bill',bid=b.id) }}" class="flex items-center gap-3 px-5 py-3.5 transition-colors active:opacity-60" style="border-bottom:1px solid var(--border2);text-decoration:none;">
+      <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm text-white flex-shrink-0" style="background:var(--primary)">
+        {{ b.customer_name[0].upper() }}
+      </div>
       <div class="flex-1 min-w-0">
-        <p class="font-bold text-[#8B4513] text-sm">{{ b.bill_number }}</p>
-        <p class="text-gray-700 font-medium text-sm truncate">{{ b.customer_name }}</p>
-        <p class="text-xs text-gray-400 mt-0.5">{{ b.created_at.strftime('%d %b %I:%M %p') }} · {{ b.creator.username }}</p>
+        <p class="font-semibold text-sm truncate" style="color:var(--text)">{{ b.customer_name }}</p>
+        <p class="text-xs mt-0.5" style="color:var(--text3)">{{ b.created_at.strftime('%d %b · %I:%M %p') }}</p>
       </div>
       <div class="text-right flex-shrink-0">
-        <p class="font-bold text-gray-900">₹{{ "%.2f"|format(b.total_amount) }}</p>
-        <span class="text-gray-300 text-lg">›</span>
+        <p class="font-bold text-sm" style="color:var(--text)">₹{{ "%.0f"|format(b.total_amount) }}</p>
+        <p class="text-xs mt-0.5" style="color:var(--primary)">{{ b.bill_number }}</p>
       </div>
     </a>
     {% endfor %}
-  </div>
   {% else %}
-  <div class="text-center py-12 text-gray-400">
-    <p class="text-3xl mb-2">🧾</p><p class="text-sm">No bills yet</p>
+  <div class="text-center py-12" style="color:var(--text3)">
+    <p class="text-4xl mb-2">🧾</p><p class="text-sm">No bills yet</p>
   </div>
   {% endif %}
 </div>

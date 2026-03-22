@@ -3,91 +3,138 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"/>
-  <meta name="theme-color" content="#1C1C1E"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <link rel="manifest" href="/manifest.json"/>
-  <link rel="apple-touch-icon" href="/static/icons/icon-192.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
   <title>{% block title %}Auto Pottery Bill{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={theme:{extend:{colors:{clay:{DEFAULT:'#8B4513'}}}}}</script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif'],display:['"Plus Jakarta Sans"','Inter','sans-serif']}}}}</script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
   {% block head %}{% endblock %}
 </head>
-<body class="bg-gray-100 text-gray-900">
-
+<body>
 <div class="flex min-h-screen">
 
   <!-- SIDEBAR -->
-  <aside id="sidebar" class="fixed top-0 left-0 h-full w-60 bg-[#1C1C1E] flex flex-col z-50 -translate-x-full md:translate-x-0 transition-transform duration-300">
-    <div class="px-5 py-5 border-b border-white/10">
-      <p class="font-bold text-base text-white leading-tight" style="font-family:Georgia,serif">
-        AUTO <span class="text-orange-400">POTTERY</span> BILL
-      </p>
-      <p class="text-xs text-white/30 mt-0.5 uppercase tracking-widest">HK.pvt.Ltd</p>
+  <aside id="sidebar" class="app-sidebar fixed top-0 left-0 h-full w-64 z-50 -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+
+    <!-- Logo -->
+    <div class="px-6 py-6" style="border-bottom:1px solid rgba(255,255,255,.06)">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style="background:rgba(99,102,241,.25)">🏺</div>
+        <div>
+          <p class="font-display font-bold text-sm text-white leading-tight tracking-wide">AUTO POTTERY BILL</p>
+          <p class="text-xs mt-0.5" style="color:rgba(255,255,255,.3)">HK.pvt.Ltd</p>
+        </div>
+      </div>
     </div>
-    <nav class="flex-1 overflow-y-auto py-3">
+
+    <!-- Nav -->
+    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
       {% if session.get('role') == 'admin' %}
-        <p class="px-5 pt-3 pb-1 text-xs font-bold text-white/20 uppercase tracking-widest">Main</p>
-        <a href="{{ url_for('dashboard') }}"  class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='dashboard' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>📊</span><span data-i18n="nav_dashboard">Dashboard</span></a>
-        <a href="{{ url_for('billing') }}"    class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='billing' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>🧾</span><span data-i18n="nav_newbill">New Bill</span></a>
-        <a href="{{ url_for('history') }}"    class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='history' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>📋</span><span data-i18n="nav_allbills">All Bills</span></a>
-        <p class="px-5 pt-4 pb-1 text-xs font-bold text-white/20 uppercase tracking-widest">Manage</p>
-        <a href="{{ url_for('products') }}"   class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='products' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>🏺</span><span data-i18n="nav_products">Products</span></a>
-        <a href="{{ url_for('users') }}"      class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='users' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>👥</span><span data-i18n="nav_users">Users</span></a>
-        <p class="px-5 pt-4 pb-1 text-xs font-bold text-white/20 uppercase tracking-widest">Account</p>
-        <a href="{{ url_for('settings') }}"   class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='settings' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>⚙️</span><span data-i18n="nav_settings">Settings</span></a>
-        <a href="{{ url_for('logout') }}"     class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-400/70 border-l-[3px] border-transparent hover:text-white hover:bg-red-500/15 hover:border-red-400 transition-colors"><span>🚪</span><span data-i18n="nav_logout">Logout</span></a>
+        <p class="section-label px-3 pt-1 pb-2">Menu</p>
+        {% for ep,ic,lb,key in [('dashboard','📊','Dashboard','nav_dashboard'),('billing','🧾','New Bill','nav_newbill'),('history','📋','All Bills','nav_allbills')] %}
+        <a href="{{ url_for(ep) }}" class="sb-item {% if request.endpoint==ep %}sb-active{% endif %}">
+          <span class="text-base w-5 text-center leading-none">{{ ic }}</span>
+          <span data-i18n="{{ key }}">{{ lb }}</span>
+        </a>
+        {% endfor %}
+        <p class="section-label px-3 pt-4 pb-2">Manage</p>
+        {% for ep,ic,lb,key in [('products','🏺','Products','nav_products'),('users','👥','Users','nav_users')] %}
+        <a href="{{ url_for(ep) }}" class="sb-item {% if request.endpoint==ep %}sb-active{% endif %}">
+          <span class="text-base w-5 text-center leading-none">{{ ic }}</span>
+          <span data-i18n="{{ key }}">{{ lb }}</span>
+        </a>
+        {% endfor %}
+        <p class="section-label px-3 pt-4 pb-2">Account</p>
+        <a href="{{ url_for('settings') }}" class="sb-item {% if request.endpoint=='settings' %}sb-active{% endif %}">
+          <span class="text-base w-5 text-center leading-none">⚙️</span>
+          <span data-i18n="nav_settings">Settings</span>
+        </a>
+        <a href="{{ url_for('logout') }}" class="sb-item" style="color:rgba(248,113,113,.7)">
+          <span class="text-base w-5 text-center leading-none">🚪</span>
+          <span data-i18n="nav_logout">Logout</span>
+        </a>
       {% else %}
-        <p class="px-5 pt-3 pb-1 text-xs font-bold text-white/20 uppercase tracking-widest">Billing</p>
-        <a href="{{ url_for('billing') }}"  class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='billing' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>🧾</span><span data-i18n="nav_newbill">New Bill</span></a>
-        <a href="{{ url_for('history') }}"  class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='history' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>📋</span><span data-i18n="nav_mybills">My Bills</span></a>
-        <p class="px-5 pt-4 pb-1 text-xs font-bold text-white/20 uppercase tracking-widest">Account</p>
-        <a href="{{ url_for('settings') }}"  class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='settings' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>⚙️</span><span data-i18n="nav_settings">Settings</span></a>
-        <a href="{{ url_for('logout') }}"    class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-400/70 border-l-[3px] border-transparent hover:text-white hover:bg-red-500/15 hover:border-red-400 transition-colors"><span>🚪</span><span data-i18n="nav_logout">Logout</span></a>
+        <p class="section-label px-3 pt-1 pb-2">Billing</p>
+        {% for ep,ic,lb,key in [('billing','🧾','New Bill','nav_newbill'),('history','📋','My Bills','nav_mybills'),('settings','⚙️','Settings','nav_settings')] %}
+        <a href="{{ url_for(ep) }}" class="sb-item {% if request.endpoint==ep %}sb-active{% endif %}">
+          <span class="text-base w-5 text-center leading-none">{{ ic }}</span>
+          <span data-i18n="{{ key }}">{{ lb }}</span>
+        </a>
+        {% endfor %}
+        <a href="{{ url_for('logout') }}" class="sb-item" style="color:rgba(248,113,113,.7)">
+          <span class="text-base w-5 text-center leading-none">🚪</span>
+          <span data-i18n="nav_logout">Logout</span>
+        </a>
       {% endif %}
     </nav>
-    <div class="px-5 py-4 border-t border-white/10 flex items-center gap-3">
-      <div class="w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-orange-400 flex items-center justify-center text-white font-bold text-base flex-shrink-0">{{ session.get('username','?')[0].upper() }}</div>
-      <div class="min-w-0">
-        <p class="text-sm font-semibold text-white truncate">{{ session.get('username') }}</p>
-        <p class="text-xs text-white/35" data-i18n="{{ 'role_admin' if session.get('role')=='admin' else 'role_worker' }}">{{ '👑 Admin' if session.get('role')=='admin' else '🧑 Worker' }}</p>
+
+    <!-- User -->
+    <div class="px-4 py-4 mx-3 mb-4 rounded-xl" style="background:rgba(255,255,255,.05)">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style="background:var(--primary)">
+          {{ session.get('username','?')[0].upper() }}
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-semibold text-white truncate">{{ session.get('username') }}</p>
+          <p class="text-xs" style="color:rgba(255,255,255,.35)">{{ '👑 Admin' if session.get('role')=='admin' else '🧑 Worker' }}</p>
+        </div>
       </div>
     </div>
   </aside>
 
-  <div id="overlay" onclick="closeSb()" class="fixed inset-0 bg-black/60 z-40 hidden backdrop-blur-sm"></div>
+  <div id="overlay" onclick="closeSb()" class="fixed inset-0 z-40 hidden" style="background:rgba(0,0,0,.55);backdrop-filter:blur(4px)"></div>
 
   <!-- MAIN -->
-  <div class="flex-1 flex flex-col min-h-screen md:ml-60">
+  <div class="flex-1 flex flex-col min-h-screen md:ml-64">
 
     <!-- TOPBAR -->
-    <header class="sticky top-0 z-30 h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shadow-sm">
+    <header class="app-topbar sticky top-0 z-30 h-14 flex items-center justify-between px-4">
       <div class="flex items-center gap-3 min-w-0">
-        <button onclick="openSb()" class="md:hidden p-1.5 text-gray-800 text-2xl leading-none flex-shrink-0">☰</button>
-        <span class="font-bold text-sm text-gray-900 truncate" style="font-family:Georgia,serif">AUTO <span class="text-orange-500">POTTERY</span> BILL</span>
+        <button onclick="openSb()" class="md:hidden w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors" style="color:rgba(255,255,255,.6);background:rgba(255,255,255,.06)">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="5" x2="16" y2="5"/><line x1="2" y1="9" x2="16" y2="9"/><line x1="2" y1="13" x2="16" y2="13"/></svg>
+        </button>
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-lg leading-none">🏺</span>
+          <span class="font-display font-bold text-sm text-white truncate tracking-wide">AUTO POTTERY BILL</span>
+        </div>
       </div>
       <div class="flex items-center gap-2 flex-shrink-0">
-        <!-- Language quick switcher -->
-        <button onclick="toggleLangMenu()" class="text-lg leading-none" id="langFlag" title="Change Language">🌐</button>
-        <div id="langMenu" class="hidden absolute right-4 top-14 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
-          <button onclick="changeLang('en')" class="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium hover:bg-gray-50 transition-colors border-b border-gray-100">🇬🇧 English</button>
-          <button onclick="changeLang('hi')" class="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium hover:bg-gray-50 transition-colors border-b border-gray-100">🇮🇳 हिंदी</button>
-          <button onclick="changeLang('te')" class="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium hover:bg-gray-50 transition-colors border-b border-gray-100">🏺 తెలుగు</button>
-          <button onclick="changeLang('ta')" class="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium hover:bg-gray-50 transition-colors">🌺 தமிழ்</button>
+        <!-- Lang -->
+        <div class="relative" id="langWrap">
+          <button onclick="toggleLangMenu()" id="langFlag"
+                  class="flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold transition-colors"
+                  style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.1)">
+            <span id="currentLangFlag">🌐</span>
+            <span id="currentLangName">EN</span>
+          </button>
+          <div id="langMenu" class="hidden absolute right-0 top-10 z-50 scale-in"
+               style="background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.12);min-width:155px;overflow:hidden;">
+            <button onclick="changeLang('en')" class="lang-opt flex items-center gap-3 w-full px-4 py-3 text-sm font-medium transition-colors" style="color:var(--text);border-bottom:1px solid var(--border2)">🇬🇧 English</button>
+            <button onclick="changeLang('hi')" class="lang-opt flex items-center gap-3 w-full px-4 py-3 text-sm font-medium transition-colors" style="color:var(--text);border-bottom:1px solid var(--border2)">🇮🇳 हिंदी</button>
+            <button onclick="changeLang('te')" class="lang-opt flex items-center gap-3 w-full px-4 py-3 text-sm font-medium transition-colors" style="color:var(--text);border-bottom:1px solid var(--border2)">🏺 తెలుగు</button>
+            <button onclick="changeLang('ta')" class="lang-opt flex items-center gap-3 w-full px-4 py-3 text-sm font-medium transition-colors" style="color:var(--text)">🌺 தமிழ்</button>
+          </div>
         </div>
-        <span class="text-xs font-bold px-2.5 py-1 rounded-full {% if session.get('role')=='admin' %}bg-orange-100 text-orange-700{% else %}bg-blue-100 text-blue-700{% endif %}" data-i18n="{{ 'role_admin' if session.get('role')=='admin' else 'role_worker' }}">
-          {{ '👑 Admin' if session.get('role')=='admin' else '🧑 Worker' }}
-        </span>
+        <!-- User chip -->
+        <div class="hidden sm:flex items-center gap-2 h-8 px-3 rounded-lg" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1)">
+          <div class="w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-xs" style="background:var(--primary)">{{ session.get('username','?')[0].upper() }}</div>
+          <span class="text-xs font-semibold" style="color:rgba(255,255,255,.8)">{{ session.get('username') }}</span>
+        </div>
       </div>
     </header>
 
-    <main class="flex-1 p-4 pb-safe md:pb-6">
+    <!-- PAGE -->
+    <main class="page-body flex-1 p-4 pb-safe md:p-6 md:pb-10">
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% for cat, msg in messages %}
-          <div class="mb-3 px-4 py-3 rounded-xl text-sm {% if cat=='danger' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">{{ msg }}</div>
+        <div class="mb-4 px-4 py-3 rounded-xl text-sm font-medium fade-in
+          {% if cat=='danger' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-emerald-50 text-emerald-700 border border-emerald-200{% endif %}">
+          {{ msg }}
+        </div>
         {% endfor %}
       {% endwith %}
       {% block content %}{% endblock %}
@@ -96,56 +143,58 @@
 </div>
 
 <!-- BOTTOM NAV -->
-<nav class="fixed bottom-0 left-0 right-0 h-nav bg-[#1C1C1E] border-t border-white/10 z-40 md:hidden">
-  <div class="flex h-20">
+<nav class="app-bnav fixed bottom-0 left-0 right-0 z-40 md:hidden h-nav">
+  <div class="flex h-16">
     {% if session.get('role') == 'admin' %}
-      <a href="{{ url_for('dashboard') }}"  class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='dashboard' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">📊</span><span data-i18n="nav_dashboard">Dash</span></a>
-      <a href="{{ url_for('billing') }}"    class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='billing' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">🧾</span><span data-i18n="nav_newbill">Bill</span></a>
-      <a href="{{ url_for('history') }}"    class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='history' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">📋</span><span data-i18n="nav_bills">Bills</span></a>
-      <a href="{{ url_for('products') }}"   class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='products' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">🏺</span><span data-i18n="nav_products">Items</span></a>
-      <a href="{{ url_for('settings') }}"   class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='settings' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">⚙️</span><span data-i18n="nav_settings">More</span></a>
+      {% for ep,ic,lb,key in [('dashboard','📊','Dash','nav_dashboard'),('billing','🧾','Bill','nav_newbill'),('history','📋','Bills','nav_bills'),('products','🏺','Items','nav_products'),('settings','⚙️','More','nav_settings')] %}
+      <a href="{{ url_for(ep) }}" class="c-bnav-item flex-1 flex flex-col items-center justify-center gap-1 {% if request.endpoint==ep %}active{% endif %}">
+        <span class="text-xl leading-none">{{ ic }}</span>
+        <span class="text-[9px] font-semibold tracking-wide uppercase" data-i18n="{{ key }}">{{ lb }}</span>
+      </a>
+      {% endfor %}
     {% else %}
-      <a href="{{ url_for('billing') }}"  class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='billing' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">🧾</span><span data-i18n="nav_newbill">New Bill</span></a>
-      <a href="{{ url_for('history') }}"  class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='history' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">📋</span><span data-i18n="nav_mybills">My Bills</span></a>
-      <a href="{{ url_for('settings') }}"  class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='settings' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">⚙️</span><span data-i18n="nav_settings">Settings</span></a>
-      <a href="{{ url_for('logout') }}"    class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] text-white/40 border-transparent"><span class="text-2xl leading-none">🚪</span><span data-i18n="nav_logout">Logout</span></a>
+      {% for ep,ic,lb,key in [('billing','🧾','New Bill','nav_newbill'),('history','📋','My Bills','nav_mybills'),('settings','⚙️','Settings','nav_settings'),('logout','🚪','Logout','nav_logout')] %}
+      <a href="{{ url_for(ep) }}" class="c-bnav-item flex-1 flex flex-col items-center justify-center gap-1 {% if request.endpoint==ep %}active{% endif %}">
+        <span class="text-xl leading-none">{{ ic }}</span>
+        <span class="text-[9px] font-semibold tracking-wide uppercase" data-i18n="{{ key }}">{{ lb }}</span>
+      </a>
+      {% endfor %}
     {% endif %}
   </div>
 </nav>
 
 <script>
+var LANG_FLAGS={en:'🇬🇧',hi:'🇮🇳',te:'🏺',ta:'🌺'};
+var LANG_SHORT={en:'EN',hi:'HI',te:'TE',ta:'TA'};
+
 function openSb(){document.getElementById('sidebar').classList.remove('-translate-x-full');document.getElementById('overlay').classList.remove('hidden');}
 function closeSb(){document.getElementById('sidebar').classList.add('-translate-x-full');document.getElementById('overlay').classList.add('hidden');}
 document.querySelectorAll('#sidebar a').forEach(function(el){el.addEventListener('click',function(){if(window.innerWidth<768)closeSb();});});
-
-// Zoom block
-// Block ONLY pinch zoom (2+ fingers), never block single-finger scroll
 document.addEventListener('touchstart',function(e){if(e.touches.length>1)e.preventDefault();},{passive:false});
 document.addEventListener('touchmove',function(e){if(e.touches.length>1)e.preventDefault();},{passive:false});
 
-// Language switcher
+function updateLangBtn(lang){
+  var f=document.getElementById('currentLangFlag'),n=document.getElementById('currentLangName');
+  if(f)f.textContent=LANG_FLAGS[lang]||'🌐';
+  if(n)n.textContent=LANG_SHORT[lang]||'EN';
+}
 function toggleLangMenu(){
   var m=document.getElementById('langMenu');
-  m.classList.toggle('hidden');
-  document.addEventListener('click',function handler(e){
-    if(!e.target.closest('#langMenu')&&!e.target.closest('#langFlag')){m.classList.add('hidden');document.removeEventListener('click',handler);}
-  });
+  if(m.classList.contains('hidden')){m.classList.remove('hidden');}else{m.classList.add('hidden');}
 }
 function changeLang(lang){
-  applyLang(lang);
-  document.getElementById('langMenu').classList.add('hidden');
-  // Save to cookie so server knows
+  applyLang(lang);document.getElementById('langMenu').classList.add('hidden');
   document.cookie='apb_lang='+lang+';path=/;max-age=31536000';
-  // Show toast
+  updateLangBtn(lang);
   var t=document.createElement('div');
-  t.className='fixed top-16 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm font-semibold px-4 py-2 rounded-full z-50 shadow-lg';
-  var flags={en:'🇬🇧 English',hi:'🇮🇳 हिंदी',te:'🏺 తెలుగు',ta:'🌺 தமிழ்'};
-  t.textContent=flags[lang]||lang;
-  document.body.appendChild(t);
-  setTimeout(function(){t.remove();},2000);
+  t.style.cssText='position:fixed;top:68px;left:50%;transform:translateX(-50%) translateY(-6px);padding:7px 18px;border-radius:20px;background:var(--primary);color:white;font-size:12px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.15);opacity:0;transition:all .25s;pointer-events:none;';
+  var n={en:'🇬🇧 English',hi:'🇮🇳 हिंदी',te:'🏺 తెలుగు',ta:'🌺 தமிழ்'};
+  t.textContent=n[lang]||lang;document.body.appendChild(t);
+  requestAnimationFrame(function(){t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';});
+  setTimeout(function(){t.style.opacity='0';setTimeout(function(){t.remove();},250);},1800);
 }
-
-// PWA
+document.addEventListener('click',function(e){if(!e.target.closest('#langWrap'))document.getElementById('langMenu').classList.add('hidden');});
+document.addEventListener('DOMContentLoaded',function(){updateLangBtn(getLang());applyLang(getLang());});
 if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});
 </script>
 {% block scripts %}{% endblock %}

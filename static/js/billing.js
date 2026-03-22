@@ -1,186 +1,318 @@
-var cart=[],curBill=null;
+/* ═══════════════════════════════════════
+   AUTO POTTERY BILL — BILLING LOGIC
+   ═══════════════════════════════════════ */
 
-function filterProds(){
-  var q=document.getElementById('filterBox').value.toLowerCase();
-  document.querySelectorAll('.prod-tile').forEach(function(t){
-    t.style.display=(q&&(t.getAttribute('data-n')||'').indexOf(q)===-1)?'none':'';
+var cart = [];
+var curBill = null;
+
+/* ── FILTER PRODUCTS ── */
+function filterProds() {
+  var q = document.getElementById('filterBox').value.toLowerCase();
+  document.querySelectorAll('.prod-tile').forEach(function(t) {
+    t.style.display = (q && (t.getAttribute('data-n') || '').indexOf(q) === -1) ? 'none' : '';
   });
 }
 
-function addProd(id,tel,eng){
-  var ex=cart.find(function(i){return i.pid===id;});
-  if(ex){ex.qty++;ex.total=ex.qty*ex.price;}
-  else{cart.push({pid:id,tel:tel,eng:eng,qty:1,price:0,total:0});}
-  updBadge(id);renderCart();
-  var t=document.getElementById('tile'+id);
-  if(t){t.style.transform='scale(1.08)';setTimeout(function(){t.style.transform='';},180);}
+/* ── ADD PRODUCT ── */
+function addProd(id, tel, eng) {
+  var ex = cart.find(function(i) { return i.pid === id; });
+  if (ex) {
+    ex.qty++;
+    ex.total = ex.qty * ex.price;
+  } else {
+    cart.push({ pid: id, tel: tel, eng: eng, qty: 1, price: 0, total: 0 });
+  }
+  highlightTile(id, true);
+  updateBadge(id);
+  renderCart();
 }
 
-function updBadge(id){
-  var it=cart.find(function(i){return i.pid===id;}),b=document.getElementById('badge'+id),t=document.getElementById('tile'+id);
-  if(!b||!t)return;
-  if(it&&it.qty>0){
-    b.textContent=it.qty;b.classList.remove('hidden');
-    t.style.borderColor='#8B4513';t.style.background='rgba(139,69,19,.06)';
-  }else{
-    b.classList.add('hidden');
-    t.style.borderColor='';t.style.background='';
+/* ── HIGHLIGHT TILE ── */
+function highlightTile(id, selected) {
+  var t = document.getElementById('tile' + id);
+  if (!t) return;
+  if (selected) {
+    t.style.border = '2.5px solid #4F46E5';
+    t.style.background = '#EEF2FF';
+    t.style.boxShadow = '0 0 0 3px rgba(79,70,229,.15)';
+  } else {
+    t.style.border = '';
+    t.style.background = '';
+    t.style.boxShadow = '';
   }
 }
 
-function remItem(idx){var id=cart[idx].pid;cart.splice(idx,1);updBadge(id);renderCart();}
-function updQty(idx,v){cart[idx].qty=Math.max(1,parseInt(v)||1);cart[idx].total=cart[idx].qty*cart[idx].price;updBadge(cart[idx].pid);renderCart();}
-function updPrice(idx,v){cart[idx].price=parseFloat(v)||0;cart[idx].total=cart[idx].qty*cart[idx].price;renderCart();}
-function clearCart(){cart.forEach(function(i){updBadge(i.pid);});cart=[];renderCart();}
+/* ── UPDATE BADGE ── */
+function updateBadge(id) {
+  var it = cart.find(function(i) { return i.pid === id; });
+  var b = document.getElementById('badge' + id);
+  if (!b) return;
+  if (it && it.qty > 0) {
+    b.textContent = it.qty;
+    b.style.display = 'flex';
+  } else {
+    b.style.display = 'none';
+  }
+}
 
-function renderCart(){
-  var e=document.getElementById('cartEmpty'),ci=document.getElementById('cartItems');
-  if(!cart.length){e.classList.remove('hidden');ci.classList.add('hidden');}
-  else{
-    e.classList.add('hidden');ci.classList.remove('hidden');
-    // Card layout — each item is a card, no table
-    ci.innerHTML=cart.map(function(it,idx){
-      return '<div class="border border-gray-200 rounded-xl p-3 bg-gray-50">'+
-        '<div class="flex justify-between items-start mb-2">'+
-          '<div>'+
-            '<p class="font-bold text-gray-900 text-sm">'+it.tel+'</p>'+
-            '<p class="text-xs text-gray-400">'+it.eng+'</p>'+
-          '</div>'+
-          '<button onclick="remItem('+idx+')" class="w-7 h-7 bg-red-50 border border-red-200 text-red-500 rounded-lg text-xs font-bold flex-shrink-0">✕</button>'+
-        '</div>'+
-        '<div class="flex gap-3 flex-wrap">'+
-          '<div class="flex-1 min-w-20">'+
-            '<label class="block text-xs text-gray-400 font-bold uppercase mb-1">Qty</label>'+
-            '<input type="number" min="1" value="'+it.qty+'" onchange="updQty('+idx+',this.value)"'+
-            ' class="w-full px-2 py-2 border-2 border-gray-200 rounded-lg text-center text-sm outline-none focus:border-[#8B4513]"/>'+
-          '</div>'+
-          '<div class="flex-1 min-w-24">'+
-            '<label class="block text-xs text-gray-400 font-bold uppercase mb-1">Price/Unit (₹)</label>'+
-            '<input type="number" min="0" step="0.01" value="'+(it.price||'')+'" placeholder="0.00" onchange="updPrice('+idx+',this.value)"'+
-            ' class="w-full px-2 py-2 border-2 border-gray-200 rounded-lg text-sm outline-none focus:border-[#8B4513] placeholder-gray-300"/>'+
-          '</div>'+
-          '<div class="flex-1 min-w-20 flex flex-col justify-end">'+
-            '<label class="block text-xs text-gray-400 font-bold uppercase mb-1">Total</label>'+
-            '<p class="font-bold text-[#8B4513] text-sm py-2">₹'+it.total.toFixed(2)+'</p>'+
-          '</div>'+
-        '</div>'+
-      '</div>';
+/* ── REMOVE ITEM ── */
+function remItem(idx) {
+  var id = cart[idx].pid;
+  cart.splice(idx, 1);
+  highlightTile(id, false);
+  updateBadge(id);
+  renderCart();
+}
+
+/* ── UPDATE QTY ── */
+function updQty(idx, v) {
+  cart[idx].qty = Math.max(1, parseInt(v) || 1);
+  cart[idx].total = cart[idx].qty * cart[idx].price;
+  updateBadge(cart[idx].pid);
+  renderCart();
+}
+
+/* ── UPDATE PRICE ── */
+function updPrice(idx, v) {
+  cart[idx].price = parseFloat(v) || 0;
+  cart[idx].total = cart[idx].qty * cart[idx].price;
+  renderCart();
+}
+
+/* ── CLEAR CART ── */
+function clearCart() {
+  cart.forEach(function(i) {
+    highlightTile(i.pid, false);
+    updateBadge(i.pid);
+  });
+  cart = [];
+  renderCart();
+}
+
+/* ── RENDER CART ── */
+function renderCart() {
+  var empty = document.getElementById('cartEmpty');
+  var items = document.getElementById('cartItems');
+  if (!cart.length) {
+    empty.style.display = '';
+    items.style.display = 'none';
+    items.innerHTML = '';
+  } else {
+    empty.style.display = 'none';
+    items.style.display = '';
+    items.innerHTML = cart.map(function(it, idx) {
+      return (
+        '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:12px 14px;margin-bottom:8px;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">' +
+            '<div>' +
+              '<p style="font-weight:700;font-size:.88rem;color:#0F172A;margin:0;">' + it.tel + '</p>' +
+              '<p style="font-size:.72rem;color:#94A3B8;margin:2px 0 0;">' + it.eng + '</p>' +
+            '</div>' +
+            '<button onclick="remItem(' + idx + ')" style="width:26px;height:26px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#EF4444;border-radius:7px;font-size:.75rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;">' +
+            '<div style="flex:1;">' +
+              '<p style="font-size:.65rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px;margin:0 0 4px;">Qty</p>' +
+              '<input type="number" min="1" value="' + it.qty + '" onchange="updQty(' + idx + ',this.value)" ' +
+              'style="width:100%;padding:7px 8px;border:1.5px solid #E2E8F0;border-radius:8px;text-align:center;font-size:.85rem;color:#0F172A;background:#fff;outline:none;font-family:Inter,sans-serif;"/>' +
+            '</div>' +
+            '<div style="flex:1.5;">' +
+              '<p style="font-size:.65rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px;margin:0 0 4px;">Price / Unit (₹)</p>' +
+              '<input type="number" min="0" step="0.01" value="' + (it.price || '') + '" placeholder="0.00" onchange="updPrice(' + idx + ',this.value)" ' +
+              'style="width:100%;padding:7px 8px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:.85rem;color:#0F172A;background:#fff;outline:none;font-family:Inter,sans-serif;"/>' +
+            '</div>' +
+            '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;">' +
+              '<p style="font-size:.65rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px;margin:0 0 4px;">Total</p>' +
+              '<p style="font-weight:700;font-size:.9rem;color:#4F46E5;margin:0;padding:7px 0;">₹' + it.total.toFixed(2) + '</p>' +
+            '</div>' +
+          '</div>' +
+        '</div>'
+      );
     }).join('');
   }
   calcTotal();
 }
 
-function calcTotal(){
-  var iT=cart.reduce(function(s,i){return s+i.total;},0);
-  var bal=parseFloat((document.getElementById('balAmt')||{}).value)||0;
-  var grand=iT+bal;
-  document.getElementById('grandTotal').textContent='₹'+grand.toFixed(2);
-  var bn=document.getElementById('balNote');if(bn)bn.classList.toggle('hidden',bal<=0);
-  var se=document.getElementById('sumItems');
-  if(!cart.length&&bal<=0){se.innerHTML='<p class="text-sm text-gray-400">No items yet</p>';}
-  else{
-    var h=cart.map(function(i){
-      return '<div class="flex justify-between text-sm py-1 border-b border-gray-100 last:border-0">'+
-        '<span class="text-gray-700 pr-2">'+i.tel+' ×'+i.qty+'</span>'+
-        '<span class="font-semibold text-gray-900 flex-shrink-0">₹'+i.total.toFixed(2)+'</span></div>';
-    }).join('');
-    if(bal>0)h+='<div class="flex justify-between text-sm py-1 text-red-500 font-semibold"><span>⚠️ Balance</span><span>₹'+bal.toFixed(2)+'</span></div>';
-    se.innerHTML=h;
+/* ── CALC TOTAL ── */
+function calcTotal() {
+  var itemTotal = cart.reduce(function(s, i) { return s + i.total; }, 0);
+  var bal = parseFloat((document.getElementById('balAmt') || {}).value) || 0; /* negative = reduce total */
+  var grand = itemTotal + bal;
+
+  var gtEl = document.getElementById('grandTotal');
+  if (gtEl) gtEl.textContent = '₹' + grand.toFixed(2);
+
+  var bn = document.getElementById('balNote');
+  if (bn) bn.style.display = bal > 0 ? '' : 'none';
+
+  var se = document.getElementById('sumItems');
+  if (se) {
+    if (!cart.length && bal <= 0) {
+      se.innerHTML = '<p style="font-size:.85rem;color:#94A3B8;">No items yet</p>';
+    } else {
+      var h = cart.map(function(i) {
+        return '<div style="display:flex;justify-content:space-between;font-size:.84rem;padding:4px 0;border-bottom:1px solid #F1F5F9;">' +
+          '<span style="color:#475569;">' + i.tel + ' ×' + i.qty + '</span>' +
+          '<span style="font-weight:600;color:#0F172A;">₹' + i.total.toFixed(2) + '</span>' +
+        '</div>';
+      }).join('');
+      if (bal > 0) h += '<div style="display:flex;justify-content:space-between;font-size:.84rem;padding:4px 0;color:#EF4444;font-weight:600;"><span>⚠️ Balance</span><span>₹' + bal.toFixed(2) + '</span></div>';
+      se.innerHTML = h;
+    }
   }
-  var name=(document.getElementById('custName')||{}).value||'';
-  var btn=document.getElementById('genBtn'),hint=document.getElementById('genHint');
-  btn.disabled=!(name.trim()&&cart.length>0);
-  if(hint)hint.classList.toggle('hidden',!(!name.trim()||!cart.length));
+
+  var btn = document.getElementById('genBtn');
+  var name = (document.getElementById('custName') || {}).value || '';
+  if (btn) btn.disabled = !(name.trim() && cart.length > 0);
+
+  var hint = document.getElementById('genHint');
+  if (hint) hint.style.display = (!name.trim() || !cart.length) ? '' : 'none';
 }
 
-function genBill(){
-  var name=document.getElementById('custName').value.trim();
-  var phone=document.getElementById('custPhone').value.trim();
-  var bal=parseFloat(document.getElementById('balAmt').value)||0;
-  if(!name){alert('Enter customer name');return;}
-  if(!cart.length){alert('Add at least one item');return;}
-  var mp=cart.find(function(i){return !i.price||i.price<=0;});
-  if(mp){alert('Enter price for: '+mp.tel+' ('+mp.eng+')');return;}
-  var btn=document.getElementById('genBtn');btn.disabled=true;btn.textContent='⏳ Generating...';
-  fetch('/billing/create',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({customer_name:name,customer_phone:phone,balance:bal,
-      items:cart.map(function(i){return{product_id:i.pid,name:i.eng,telugu_name:i.tel,quantity:i.qty,price:i.price};})})
-  }).then(function(r){return r.json();}).then(function(d){
-    if(d.error){alert('Error: '+d.error);btn.disabled=false;btn.textContent='🧾 Generate Bill';return;}
-    curBill=d.bill;showSucc(d.bill);
-  }).catch(function(){alert('Failed. Try again.');btn.disabled=false;btn.textContent='🧾 Generate Bill';});
+/* ── GENERATE BILL ── */
+function genBill() {
+  var name = document.getElementById('custName').value.trim();
+  var phone = document.getElementById('custPhone').value.trim();
+  var bal = parseFloat(document.getElementById('balAmt').value) || 0;
+  if (!name) { alert('Enter customer name'); return; }
+  if (!cart.length) { alert('Add at least one item'); return; }
+  var mp = cart.find(function(i) { return !i.price || i.price <= 0; });
+  if (mp) { alert('Enter price for: ' + mp.tel); return; }
+
+  var now = new Date();
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var dd = now.getDate().toString().padStart(2,'0');
+  var mo = months[now.getMonth()];
+  var yyyy = now.getFullYear();
+  var hh = (now.getHours() % 12 || 12).toString().padStart(2,'0');
+  var mi = now.getMinutes().toString().padStart(2,'0');
+  var ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+  var jsDate = dd + ' ' + mo + ' ' + yyyy;
+  var jsTime = hh + ':' + mi + ' ' + ampm;
+
+  var btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating...';
+
+  fetch('/billing/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      customer_name: name, customer_phone: phone, balance: bal,
+      items: cart.map(function(i) {
+        return { product_id: i.pid, name: i.eng, telugu_name: i.tel, quantity: i.qty, price: i.price };
+      })
+    })
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (d.error) { alert('Error: ' + d.error); btn.disabled = false; btn.textContent = '🧾 Generate Bill'; return; }
+    d.bill.date = jsDate;
+    d.bill.time = jsTime;
+    curBill = d.bill;
+    showSucc(d.bill);
+  }).catch(function() { alert('Failed. Try again.'); btn.disabled = false; btn.textContent = '🧾 Generate Bill'; });
 }
 
-function showSucc(b){
-  document.getElementById('succBillNo').textContent=b.bill_number+' · ₹'+b.total_amount.toFixed(2);
-  var rows=b.bill_items.map(function(it){
-    return '<div class="border border-gray-200 rounded-lg p-2.5 mb-2 bg-white">'+
-      '<div class="flex justify-between items-start">'+
-        '<div class="pr-2"><p class="font-bold text-gray-900 text-xs">'+(it.telugu_name||it.name)+'</p>'+
-        '<p class="text-gray-400 text-xs">('+it.name+')</p></div>'+
-        '<p class="font-bold text-[#8B4513] text-sm flex-shrink-0">₹'+it.total.toFixed(2)+'</p>'+
-      '</div>'+
-      '<div class="flex gap-3 mt-1 text-xs text-gray-500">'+
-        '<span>Qty: '+it.quantity+'</span><span>Price: ₹'+it.price.toFixed(2)+'</span>'+
-      '</div></div>';
+/* ── SHOW SUCCESS MODAL ── */
+function showSucc(b) {
+  document.getElementById('succBillNo').textContent = b.bill_number + ' · ₹' + b.total_amount.toFixed(2);
+
+  var rows = b.bill_items.map(function(it) {
+    return '<div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #F1F5F9;">' +
+      '<span style="flex:3;font-size:.88rem;color:#0F172A;font-weight:500;">' + (it.telugu_name || it.name) + ' <span style="color:#94A3B8;font-size:.75rem;">(' + it.name + ')</span></span>' +
+      '<span style="flex:1;text-align:center;font-size:.88rem;color:#475569;">' + it.quantity + '</span>' +
+      '<span style="flex:1.1;text-align:right;font-size:.88rem;color:#475569;">₹' + it.price.toFixed(2) + '</span>' +
+      '<span style="flex:1.1;text-align:right;font-size:.88rem;font-weight:700;color:#0F172A;">₹' + it.total.toFixed(2) + '</span>' +
+    '</div>';
   }).join('');
-  var balRow='';
-  if(b.balance&&b.balance>0)balRow='<div class="flex justify-between text-sm p-2.5 bg-red-50 rounded-lg mb-2 text-red-500 font-semibold"><span>⚠️ Previous Balance</span><span>₹'+b.balance.toFixed(2)+'</span></div>';
-  document.getElementById('billPreview').innerHTML=
-    '<div class="text-center border-b-4 border-double border-gray-800 pb-3 mb-3">'+
-      '<h2 class="text-base font-bold text-gray-900" style="font-family:Georgia,serif">AUTO POTTERY BILL</h2>'+
-      '<p class="text-xs text-gray-500">HK.pvt.Ltd</p></div>'+
-    '<div class="text-xs text-gray-600 mb-2"><strong>'+b.bill_number+'</strong> · '+b.date+' '+b.time+'</div>'+
-    '<div class="text-xs text-gray-700 mb-3 font-semibold">👤 '+b.customer_name+(b.customer_phone?' · 📞 '+b.customer_phone:'')+'</div>'+
-    rows+balRow+
-    '<div class="bg-gray-900 text-white rounded-xl px-4 py-3 flex justify-between items-center mt-1">'+
-      '<span class="font-semibold text-sm">Grand Total</span>'+
-      '<span class="font-bold text-orange-400 text-base" style="font-family:Georgia,serif">₹'+b.total_amount.toFixed(2)+'</span></div>'+
-    '<p class="text-center text-xs text-gray-400 italic mt-3">🙏 Thank you!</p>';
+
+  var balRow = '';
+  if (b.balance && b.balance > 0) {
+    balRow = '<div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #F1F5F9;">' +
+      '<span style="flex:3;font-size:.88rem;color:#EF4444;font-weight:600;">⚠️ Previous Balance</span>' +
+      '<span style="flex:1;"></span><span style="flex:1.1;"></span>' +
+      '<span style="flex:1.1;text-align:right;font-size:.88rem;font-weight:700;color:#EF4444;">₹' + b.balance.toFixed(2) + '</span>' +
+    '</div>';
+  }
+
+  document.getElementById('billPreview').innerHTML =
+    '<div id="bill-render" style="font-family:Inter,system-ui,sans-serif;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;overflow:hidden;">'+
+      '<div style="padding:22px 22px 18px;text-align:center;border-bottom:3px double #0F172A;">'+
+        '<h2 style="font-family:Georgia,serif;font-size:1.45rem;font-weight:800;color:#0F172A;letter-spacing:.5px;margin:0;">AUTO POTTERY BILL</h2>'+
+        '<p style="font-size:.8rem;color:#94A3B8;margin:4px 0 0;">HK.pvt.Ltd</p>'+
+      '</div>'+
+      '<div style="padding:18px 22px;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px;">'+
+          '<div>'+
+            '<p style="font-weight:800;font-size:.9rem;color:#0F172A;font-family:monospace;margin:0;">'+b.bill_number+'</p>'+
+            '<p style="font-size:.9rem;color:#0F172A;margin:5px 0 0;"><strong>Customer:</strong> '+b.customer_name+'</p>'+
+            (b.customer_phone?'<p style="font-size:.8rem;color:#475569;margin:3px 0 0;">📞 '+b.customer_phone+'</p>':'')+
+          '</div>'+
+          '<p style="font-size:.8rem;color:#94A3B8;text-align:right;margin:0;white-space:nowrap;">'+b.date+' · '+b.time+'</p>'+
+        '</div>'+
+        '<div style="border-top:1.5px solid #CBD5E1;"></div>'+
+        '<div style="display:flex;padding:8px 0;border-bottom:1px solid #E2E8F0;">'+
+          '<span style="flex:3;font-size:.7rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.6px;">Item</span>'+
+          '<span style="flex:1;text-align:center;font-size:.7rem;font-weight:700;color:#94A3B8;text-transform:uppercase;">Qty</span>'+
+          '<span style="flex:1.1;text-align:right;font-size:.7rem;font-weight:700;color:#94A3B8;text-transform:uppercase;">Price</span>'+
+          '<span style="flex:1.1;text-align:right;font-size:.7rem;font-weight:700;color:#94A3B8;text-transform:uppercase;">Total</span>'+
+        '</div>'+
+        rows+balRow+
+        '<div style="margin:20px 4px 4px;background:#1E2D4A;border-radius:18px;padding:22px 28px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 6px 20px rgba(15,23,42,.25);">'+
+          '<span style="color:#FFFFFF;font-weight:800;font-size:1.1rem;letter-spacing:.3px;">Grand Total</span>'+
+          '<span style="color:#FBBF24;font-weight:800;font-size:1.5rem;font-family:Georgia,serif;letter-spacing:-.5px;">₹'+b.total_amount.toFixed(2)+'</span>'+
+        '</div>'+
+        '<p style="text-align:center;font-size:.82rem;color:#94A3B8;font-style:italic;margin:14px 0 8px;">🙏 Thank you!</p>'+
+      '</div>'+
+    '</div>';
+
+  document.getElementById('successModal').style.display = 'flex';
   document.getElementById('successModal').classList.remove('hidden');
 }
 
-function dlPDF(){
-  if(!curBill)return;
-  var html=document.getElementById('billPreview').innerHTML;
-  var st='<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Georgia,serif;padding:20px;color:#111;font-size:13px}'+
-    '.border{border:1px solid #e5e7eb}.rounded-lg{border-radius:.5rem}.p-2\\.5{padding:.625rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mt-1{margin-top:.25rem}.mt-3{margin-top:.75rem}.pb-3{padding-bottom:.75rem}.flex{display:flex}.justify-between{justify-content:space-between}.items-start{align-items:flex-start}.items-center{align-items:center}.gap-3{gap:.75rem}.pr-2{padding-right:.5rem}.px-4{padding-left:1rem;padding-right:1rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}'+
-    '.text-xs{font-size:.72rem}.text-sm{font-size:.84rem}.text-base{font-size:1rem}.font-bold{font-weight:700}.font-semibold{font-weight:600}.text-center{text-align:center}.text-gray-400{color:#9ca3af}.text-gray-500{color:#6b7280}.text-gray-600{color:#4b5563}.text-gray-700{color:#374151}.text-gray-800{color:#1f2937}.text-gray-900{color:#111}.text-orange-400{color:#fb923c}.text-red-500{color:#ef4444}.text-white{color:#fff}.bg-white{background:#fff}.bg-gray-900{background:#111827}.bg-red-50{background:#fef2f2}.rounded-xl{border-radius:.75rem}.italic{font-style:italic}'+
-    '.border-b-4{border-bottom:4px double #1f2937}.border-double{border-style:double}.border-gray-200{border-color:#e5e7eb}.border-gray-800{border-color:#1f2937}</style>';
-  var w=window.open('','_blank');w.document.write('<!DOCTYPE html><html><head><title>'+curBill.bill_number+'</title>'+st+'</head><body>'+html+'</body></html>');w.document.close();setTimeout(function(){w.print();},500);
+/* ── PDF / PRINT ── */
+function dlPDF() {
+  var src = document.getElementById('bill-render') || document.getElementById('billPreview');
+  var w = window.open('', '_blank');
+  w.document.write('<!DOCTYPE html><html><head><title>' + (curBill ? curBill.bill_number : 'Bill') + '</title>' +
+    '<style>body{font-family:Georgia,serif;padding:24px;max-width:500px;margin:0 auto;color:#111;}*{box-sizing:border-box;}</style>' +
+    '</head><body>' + src.innerHTML + '</body></html>');
+  w.document.close();
+  setTimeout(function() { w.print(); }, 500);
 }
-function printBill(){dlPDF();}
+function printBill() { dlPDF(); }
 
-function waShare(){
-  if(!curBill)return;
-  var prev=document.getElementById('billPreview');
-  if(typeof html2canvas==='undefined'){waText();return;}
-  html2canvas(prev,{scale:2,backgroundColor:'#fffbeb',useCORS:true,logging:false}).then(function(canvas){
-    canvas.toBlob(function(blob){
-      var file=new File([blob],'bill-'+curBill.bill_number+'.png',{type:'image/png'});
-      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-        navigator.share({title:'Bill '+curBill.bill_number,text:'AUTO POTTERY BILL · ₹'+curBill.total_amount.toFixed(2),files:[file]}).catch(function(){fbWA(canvas);});
-      }else{fbWA(canvas);}
-    },'image/png');
-  }).catch(function(){waText();});
+/* ── WHATSAPP ── */
+function waShare() {
+  if (!curBill) return;
+  var prev = document.getElementById('billPreview');
+  if (typeof html2canvas === 'undefined') { waText(); return; }
+  html2canvas(prev, { scale: 2.5, backgroundColor: '#FEFDF8', useCORS: true, logging: false }).then(function(canvas) {
+    canvas.toBlob(function(blob) {
+      var file = new File([blob], 'bill-' + curBill.bill_number + '.png', { type: 'image/png' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ title: 'Bill ' + curBill.bill_number, files: [file] }).catch(function() { fbWA(canvas); });
+      } else { fbWA(canvas); }
+    }, 'image/png');
+  }).catch(function() { waText(); });
 }
-function fbWA(canvas){
-  var a=document.createElement('a');a.download='bill-'+curBill.bill_number+'.png';a.href=canvas.toDataURL('image/png');a.click();
-  setTimeout(function(){window.open('https://wa.me/?text='+encodeURIComponent('AUTO POTTERY BILL\n'+curBill.bill_number+'\n'+curBill.customer_name+'\n₹'+curBill.total_amount.toFixed(2)+'\n\n_Attach downloaded image_'),'_blank');},800);
+function fbWA(canvas) {
+  var a = document.createElement('a'); a.download = 'bill-' + curBill.bill_number + '.png'; a.href = canvas.toDataURL('image/png'); a.click();
+  setTimeout(function() { window.open('https://wa.me/?text=' + encodeURIComponent('AUTO POTTERY BILL\n' + curBill.bill_number + '\n' + curBill.customer_name + '\n₹' + curBill.total_amount.toFixed(2)), '_blank'); }, 800);
 }
-function waText(){
-  var msg='*AUTO POTTERY BILL*\n*HK.pvt.Ltd*\n────────────\n📋 '+curBill.bill_number+'\n📅 '+curBill.date+' · '+curBill.time+'\n👤 '+curBill.customer_name+'\n────────────\n';
-  curBill.bill_items.forEach(function(i){msg+='• '+(i.telugu_name||i.name)+' × '+i.quantity+' = ₹'+i.total.toFixed(2)+'\n';});
-  if(curBill.balance&&curBill.balance>0)msg+='⚠️ Balance = ₹'+curBill.balance.toFixed(2)+'\n';
-  msg+='────────────\n💰 *Total: ₹'+curBill.total_amount.toFixed(2)+'*\n\n_Thank you! 🙏_';
-  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+function waText() {
+  var msg = '*AUTO POTTERY BILL*\n────────────\n' + curBill.bill_number + '\n' + curBill.customer_name + '\n────────────\n';
+  curBill.bill_items.forEach(function(i) { msg += '• ' + (i.telugu_name || i.name) + ' ×' + i.quantity + ' = ₹' + i.total.toFixed(2) + '\n'; });
+  if (curBill.balance > 0) msg += '⚠️ Balance = ₹' + curBill.balance.toFixed(2) + '\n';
+  msg += '────────────\n*Total: ₹' + curBill.total_amount.toFixed(2) + '*\n🙏 Thank you!';
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
-function newBill(){document.getElementById('successModal').classList.add('hidden');location.reload();}
-function tickClock(){
-  var el=document.getElementById('billDT');if(!el)return;
-  var n=new Date(),mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var h=n.getHours()%12||12,mi=n.getMinutes().toString().padStart(2,'0'),ap=n.getHours()>=12?'PM':'AM';
-  el.textContent=n.getDate().toString().padStart(2,'0')+' '+mn[n.getMonth()]+' '+n.getFullYear()+'  '+h.toString().padStart(2,'0')+':'+mi+' '+ap;
+function newBill() { location.reload(); }
+
+/* ── CLOCK ── */
+function tickClock() {
+  var el = document.getElementById('billDT'); if (!el) return;
+  var n = new Date(), mn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var h = n.getHours() % 12 || 12, mi = n.getMinutes().toString().padStart(2,'0'), ap = n.getHours() >= 12 ? 'PM' : 'AM';
+  el.textContent = n.getDate().toString().padStart(2,'0') + ' ' + mn[n.getMonth()] + ' ' + n.getFullYear() + '  ' + h.toString().padStart(2,'0') + ':' + mi + ' ' + ap;
 }
-setInterval(tickClock,15000);
+setInterval(tickClock, 15000);
