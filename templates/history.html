@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% block title %}Bills{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <h1 class="text-xl font-bold text-gray-900" style="font-family:Georgia,serif" data-i18n="{{ 'hist_title' if session.get('role')=='admin' else 'hist_mytitle' }}">
+    📋 {{ 'All Bills' if session.get('role')=='admin' else 'My Bills' }}
+  </h1>
+  <p class="text-xs text-gray-500 mt-0.5"><span id="billCount">{{ bills|length }}</span> <span data-i18n="hist_found">bills found</span></p>
+</div>
+
+<!-- Search -->
+<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 mb-4 space-y-3">
+  <form method="GET" class="space-y-3">
+    <div>
+      <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1" data-i18n="hist_customer">Customer Name</label>
+      <input name="q" type="text" value="{{ search }}" data-i18n-ph="hist_search" placeholder="Search..."
+             class="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl text-sm outline-none focus:border-[#8B4513] placeholder-gray-300 transition-colors"/>
+    </div>
+    <div>
+      <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1" data-i18n="hist_date">Date</label>
+      <input name="date" type="date" value="{{ date_f }}"
+             class="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl text-sm outline-none focus:border-[#8B4513] transition-colors"/>
+    </div>
+    <div class="flex gap-2">
+      <button type="submit" class="flex-1 py-2.5 bg-[#8B4513] text-white font-bold rounded-xl text-sm active:scale-95" data-i18n="hist_dosearch">🔍 Search</button>
+      {% if search or date_f %}
+      <a href="{{ url_for('history') }}" class="flex-1 py-2.5 text-center border-2 border-gray-200 text-gray-600 font-bold rounded-xl text-sm" data-i18n="hist_clear">✕ Clear</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Bills as cards -->
+{% if bills %}
+<div class="space-y-3">
+  {% for b in bills %}
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <!-- Tap to view -->
+    <a href="{{ url_for('view_bill', bid=b.id) }}" class="block p-4 active:bg-gray-50 transition-colors">
+      <div class="flex justify-between items-start gap-3 mb-2">
+        <div class="min-w-0">
+          <p class="font-bold text-[#8B4513] text-sm">{{ b.bill_number }}</p>
+          <p class="font-semibold text-gray-800 mt-0.5 break-words">{{ b.customer_name }}</p>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <p class="font-bold text-gray-900 text-base">₹{{ "%.2f"|format(b.total_amount) }}</p>
+          <span class="text-xs bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full">{{ b.bill_items|length }} <span data-i18n="hist_items">items</span></span>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400 border-t border-gray-100 pt-2">
+        <span>📅 {{ b.date }} {{ b.time }}</span>
+        {% if session.get('role')=='admin' %}<span>👤 {{ b.created_by }}</span>{% endif %}
+      </div>
+    </a>
+    <!-- Resend button -->
+    <div class="border-t border-gray-100 px-4 py-2.5 flex gap-2">
+      <a href="{{ url_for('view_bill', bid=b.id) }}"
+         class="flex-1 py-2 text-center text-xs font-bold border-2 border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors">
+        👁️ View
+      </a>
+      <button onclick="resendBill({{ b|tojson }})"
+              class="flex-1 py-2 text-center text-xs font-bold bg-green-500 text-white rounded-lg active:scale-95 transition-transform">
+        💬 <span data-i18n="hist_resend">Resend</span>
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-2xl border border-gray-200 shadow-sm text-center py-16 text-gray-400">
+  <p class="text-4xl mb-3">📋</p>
+  <p class="text-sm" data-i18n="hist_nobills">No bills found</p>
+</div>
+{% endif %}
+
+<!-- Resend Modal -->
+<div id="resendModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center">
+  <div class="modal-anim bg-white w-full rounded-t-3xl p-5" style="max-height:80vh;overflow-y:auto;">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-bold text-gray-800 text-lg" style="font-family:Georgia,serif">💬 Resend Bill</h3>
+      <button onclick="closeResend()" class="w-8 h-8 bg-gray-100 rounded-full text-gray-500 flex items-center justify-center">✕</button>
+    </div>
+    <div id="resendPreview" class="border-2 border-gray-200 rounded-xl p-4 bg-amber-50 mb-4 text-sm"></div>
+    <div class="grid grid-cols-3 gap-3 mb-4">
+      <button onclick="resendPDF()" class="flex flex-col items-center gap-1.5 py-3 bg-[#8B4513] text-white rounded-xl font-bold text-xs active:scale-95"><span class="text-xl">⬇️</span>PDF</button>
+      <button onclick="resendPrint()" class="flex flex-col items-center gap-1.5 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold text-xs border border-gray-200 active:scale-95"><span class="text-xl">🖨️</span>Print</button>
+      <button onclick="resendWA()" class="flex flex-col items-center gap-1.5 py-3 bg-green-500 text-white rounded-xl font-bold text-xs active:scale-95"><span class="text-xl">💬</span>WhatsApp</button>
+    </div>
+    <div class="h-4"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+var curResend = null;
+
+function resendBill(bill) {
+  curResend = bill;
+  // Build mini bill preview
+  var rows = bill.bill_items.map(function(it){
+    return '<div class="flex justify-between py-1.5 border-b border-gray-200 text-xs"><span class="font-medium">'+(it.telugu_name||it.name)+'</span>'+
+      '<span class="text-right"><span class="text-gray-500 mr-2">×'+it.quantity+'</span><strong>₹'+it.total.toFixed(2)+'</strong></span></div>';
+  }).join('');
+  var balRow = bill.balance&&bill.balance>0 ? '<div class="flex justify-between py-1.5 text-xs text-red-500 font-semibold"><span>⚠️ Balance</span><span>₹'+bill.balance.toFixed(2)+'</span></div>' : '';
+  document.getElementById('resendPreview').innerHTML =
+    '<div class="text-center border-b-4 border-double border-gray-800 pb-2 mb-3">'+
+      '<p class="font-bold text-gray-900" style="font-family:Georgia,serif">AUTO POTTERY BILL</p>'+
+      '<p class="text-xs text-gray-500">HK.pvt.Ltd</p></div>'+
+    '<div class="text-xs text-gray-600 mb-1"><strong>'+bill.bill_number+'</strong> · '+bill.date+' '+bill.time+'</div>'+
+    '<div class="text-sm font-semibold text-gray-800 mb-3">👤 '+bill.customer_name+(bill.customer_phone?' · 📞 '+bill.customer_phone:'')+'</div>'+
+    rows+balRow+
+    '<div class="bg-gray-900 text-white rounded-xl px-4 py-2.5 flex justify-between items-center mt-2">'+
+      '<span class="font-semibold text-sm">Grand Total</span>'+
+      '<span class="font-bold text-orange-400" style="font-family:Georgia,serif">₹'+bill.total_amount.toFixed(2)+'</span></div>'+
+    '<p class="text-center text-xs text-gray-400 italic mt-2">🙏 Thank you!</p>';
+  document.getElementById('resendModal').classList.remove('hidden');
+}
+
+function closeResend() { document.getElementById('resendModal').classList.add('hidden'); curResend=null; }
+
+function resendWA() {
+  if(!curResend) return;
+  var prev=document.getElementById('resendPreview');
+  html2canvas(prev,{scale:2,backgroundColor:'#fffbeb',useCORS:true,logging:false}).then(function(canvas){
+    canvas.toBlob(function(blob){
+      var file=new File([blob],'bill-'+curResend.bill_number+'.png',{type:'image/png'});
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+        navigator.share({title:'Bill '+curResend.bill_number,text:'AUTO POTTERY BILL · ₹'+curResend.total_amount.toFixed(2),files:[file]}).catch(function(){fbWA(canvas);});
+      }else{fbWA(canvas);}
+    },'image/png');
+  }).catch(function(){resendWAText();});
+}
+
+function fbWA(canvas){
+  var a=document.createElement('a');a.download='bill-'+curResend.bill_number+'.png';a.href=canvas.toDataURL('image/png');a.click();
+  setTimeout(function(){window.open('https://wa.me/?text='+encodeURIComponent('AUTO POTTERY BILL\n'+curResend.bill_number+'\n'+curResend.customer_name+'\n₹'+curResend.total_amount.toFixed(2)+'\n\nAttach the image!'),'_blank');},800);
+}
+
+function resendWAText(){
+  var msg='*AUTO POTTERY BILL*\n*HK.pvt.Ltd*\n────────────\n📋 '+curResend.bill_number+'\n📅 '+curResend.date+' · '+curResend.time+'\n👤 '+curResend.customer_name+'\n────────────\n';
+  curResend.bill_items.forEach(function(i){msg+='• '+(i.telugu_name||i.name)+' × '+i.quantity+' = ₹'+i.total.toFixed(2)+'\n';});
+  if(curResend.balance&&curResend.balance>0)msg+='⚠️ Balance = ₹'+curResend.balance.toFixed(2)+'\n';
+  msg+='────────────\n💰 *Total: ₹'+curResend.total_amount.toFixed(2)+'*\n\n_Thank you! 🙏_';
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+  closeResend();
+}
+
+function resendPDF(){
+  if(!curResend)return;
+  var html=document.getElementById('resendPreview').innerHTML;
+  var w=window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><title>'+curResend.bill_number+'</title><style>body{font-family:Georgia,serif;padding:20px;max-width:500px;margin:0 auto}*{box-sizing:border-box}</style></head><body>'+html+'</body></html>');
+  w.document.close();setTimeout(function(){w.print();},500);
+}
+function resendPrint(){resendPDF();}
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}New Bill{% endblock %}
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+{% endblock %}
+{% block content %}
+
+<div class="mb-4">
+  <h1 class="text-xl font-bold text-gray-900" style="font-family:Georgia,serif">🧾 New Bill</h1>
+  <p class="text-xs text-gray-500 mt-0.5">Select products → price & qty → generate</p>
+</div>
+
+<div class="space-y-4">
+
+  <!-- Customer -->
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+    <h3 class="font-bold text-gray-800 mb-3 text-sm">👤 Customer Details</h3>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Name *</label>
+        <input id="custName" type="text" placeholder="Customer name" oninput="calcTotal()"
+               class="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl text-gray-900 outline-none focus:border-[#8B4513] placeholder-gray-300 transition-colors"/>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Phone (optional)</label>
+        <input id="custPhone" type="tel" placeholder="+91 XXXXX XXXXX"
+               class="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl text-gray-900 outline-none focus:border-[#8B4513] placeholder-gray-300 transition-colors"/>
+      </div>
+    </div>
+    <div class="mt-3 px-3 py-2 bg-gray-50 rounded-xl text-xs text-gray-500 border border-gray-200">
+      📅 <strong class="text-gray-700">Date & Time:</strong> <span id="billDT">{{ now.strftime('%d %b %Y  %I:%M %p') }}</span>
+    </div>
+  </div>
+
+  <!-- Products — 2 per row, fixed height -->
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+    <div class="flex items-center justify-between mb-3 gap-2">
+      <h3 class="font-bold text-gray-800 text-sm">🏺 Products</h3>
+      <input id="filterBox" type="text" placeholder="🔍 Filter..." oninput="filterProds()"
+             class="text-sm px-3 py-1.5 border-2 border-gray-200 rounded-xl outline-none focus:border-[#8B4513] w-32 placeholder-gray-300 transition-colors"/>
+    </div>
+    {% if products %}
+    <div id="prodGrid" class="grid grid-cols-2 gap-2" style="max-height:280px;overflow-y:auto;">
+      {% for p in products %}
+      <div id="tile{{p.id}}"
+           class="prod-tile border-2 border-gray-200 rounded-xl flex flex-col items-center justify-center px-2 py-3 cursor-pointer bg-gray-50 relative select-none"
+           data-n="{{ (p.telugu_name+' '+p.english_name)|lower }}"
+           onclick="addProd({{p.id}},'{{p.telugu_name|e}}','{{p.english_name|e}}')">
+        <span class="font-bold text-gray-900 text-center leading-tight text-sm">{{ p.telugu_name }}</span>
+        <span class="text-gray-400 text-center mt-1 text-xs">{{ p.english_name }}</span>
+        <div id="badge{{p.id}}" class="hidden absolute -top-2 -right-2 w-5 h-5 bg-[#8B4513] text-white text-xs font-bold rounded-full flex items-center justify-center shadow-md">0</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-gray-400">
+      <p class="text-3xl mb-2">🏺</p><p class="text-sm">No products. Ask admin to add.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Cart — card layout, no table on mobile -->
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-bold text-gray-800 text-sm">🛒 Cart</h3>
+      <button onclick="clearCart()" class="text-xs font-bold px-3 py-1.5 border-2 border-gray-200 text-gray-600 rounded-lg">🗑️ Clear</button>
+    </div>
+    <div id="cartEmpty" class="text-center py-8 text-gray-400">
+      <p class="text-3xl mb-2">🛒</p><p class="text-sm">Tap products above to add</p>
+    </div>
+    <div id="cartItems" class="hidden space-y-2"></div>
+  </div>
+
+  <!-- Summary -->
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+    <h3 class="font-bold text-gray-800 mb-3 text-sm">💰 Summary</h3>
+    <div id="sumItems" class="mb-3 space-y-1">
+      <p class="text-sm text-gray-400">No items yet</p>
+    </div>
+    <div class="border-t border-gray-100 pt-3 mb-3">
+      <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">💳 Previous Balance (₹)</label>
+      <input id="balAmt" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcTotal()"
+             class="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl text-gray-900 outline-none focus:border-red-400 placeholder-gray-300 transition-colors"/>
+      <p id="balNote" class="hidden text-xs text-red-500 mt-1">⚠️ Previous balance added to total</p>
+    </div>
+    <div class="bg-[#1C1C1E] rounded-xl px-4 py-3 flex justify-between items-center mb-4">
+      <span class="font-semibold text-white text-sm">Grand Total</span>
+      <span id="grandTotal" class="font-bold text-orange-400 text-lg" style="font-family:Georgia,serif">₹0.00</span>
+    </div>
+    <button id="genBtn" onclick="genBill()" disabled
+            class="w-full py-4 bg-[#8B4513] text-white font-bold rounded-xl text-base transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+      🧾 Generate Bill
+    </button>
+    <p id="genHint" class="hidden text-xs text-red-500 text-center mt-2">⚠️ Enter customer name & add items</p>
+  </div>
+
+</div><!-- end space-y-4 -->
+
+<!-- Success Modal -->
+<div id="successModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center">
+  <div class="modal-anim bg-white w-full rounded-t-3xl" style="max-height:90vh;overflow-y:auto;">
+    <div class="bg-gradient-to-r from-green-500 to-emerald-500 px-6 py-5 text-center rounded-t-3xl">
+      <p class="text-4xl mb-1">✅</p>
+      <h2 class="text-xl font-bold text-white" style="font-family:Georgia,serif">Bill Generated!</h2>
+      <p id="succBillNo" class="text-white/80 text-sm mt-1"></p>
+    </div>
+    <div class="p-4">
+      <div id="billPreview" class="border-2 border-gray-200 rounded-xl p-4 bg-amber-50 text-sm mb-4"></div>
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <button onclick="dlPDF()" class="flex flex-col items-center gap-1.5 py-3 bg-[#8B4513] text-white rounded-xl font-bold text-xs active:scale-95">
+          <span class="text-xl">⬇️</span>PDF
+        </button>
+        <button onclick="printBill()" class="flex flex-col items-center gap-1.5 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold text-xs active:scale-95 border border-gray-200">
+          <span class="text-xl">🖨️</span>Print
+        </button>
+        <button onclick="waShare()" class="flex flex-col items-center gap-1.5 py-3 bg-green-500 text-white rounded-xl font-bold text-xs active:scale-95">
+          <span class="text-xl">💬</span>WhatsApp
+        </button>
+      </div>
+      <div class="flex gap-3">
+        <a href="{{ url_for('history') }}" class="flex-1 py-3 text-center border-2 border-gray-200 text-gray-700 font-bold rounded-xl text-sm">📋 History</a>
+        <button onclick="newBill()" class="flex-1 py-3 bg-[#8B4513] text-white font-bold rounded-xl text-sm active:scale-95">🆕 New Bill</button>
+      </div>
+      <div class="h-6"></div><!-- bottom safe space -->
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/billing.js') }}"></script>
+{% endblock %}

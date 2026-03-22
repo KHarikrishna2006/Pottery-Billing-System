@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}Bill {{ bill.bill_number }}{% endblock %}
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-4 gap-3">
+  <div>
+    <h1 class="text-xl font-bold text-gray-900" style="font-family:Georgia,serif">🧾 Bill</h1>
+    <p class="text-xs text-gray-500 mt-0.5 break-all">{{ bill.bill_number }}</p>
+  </div>
+  <a href="{{ url_for('history') }}" class="px-4 py-2 border-2 border-gray-200 text-gray-600 font-bold rounded-xl text-sm flex-shrink-0">← Back</a>
+</div>
+
+<!-- Action buttons -->
+<div class="flex gap-2 mb-5 flex-wrap">
+  <button onclick="dlPDF()" class="flex-1 py-3 bg-[#8B4513] text-white font-bold rounded-xl text-sm active:scale-95 text-center">⬇️ PDF</button>
+  <button onclick="window.print()" class="flex-1 py-3 bg-gray-100 border border-gray-200 text-gray-700 font-bold rounded-xl text-sm text-center">🖨️ Print</button>
+  <button id="waBtn" onclick="waShare()" class="flex-1 py-3 bg-green-500 text-white font-bold rounded-xl text-sm active:scale-95 text-center">💬 WhatsApp</button>
+</div>
+
+<!-- Bill Card -->
+<div id="billCard" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+  <!-- Header -->
+  <div class="text-center border-b-4 border-double border-gray-800 pb-4 mb-4">
+    <p class="text-3xl mb-2">🏺</p>
+    <h2 class="text-xl font-bold text-gray-900" style="font-family:Georgia,serif">AUTO POTTERY BILL</h2>
+    <p class="text-sm text-gray-500 mt-1">HK.pvt.Ltd</p>
+  </div>
+
+  <!-- Meta info -->
+  <div class="space-y-1.5 text-sm mb-4 bg-gray-50 rounded-xl p-3">
+    <div class="flex justify-between gap-2 flex-wrap">
+      <span class="text-gray-500">Bill No</span>
+      <span class="font-bold text-[#8B4513] break-all">{{ bill.bill_number }}</span>
+    </div>
+    <div class="flex justify-between gap-2">
+      <span class="text-gray-500">Date</span>
+      <span class="font-medium">{{ bill.date }}</span>
+    </div>
+    <div class="flex justify-between gap-2">
+      <span class="text-gray-500">Time</span>
+      <span class="font-medium">{{ bill.time }}</span>
+    </div>
+    <div class="flex justify-between gap-2 flex-wrap">
+      <span class="text-gray-500">Customer</span>
+      <span class="font-bold break-words text-right">{{ bill.customer_name }}</span>
+    </div>
+    {% if bill.customer_phone %}
+    <div class="flex justify-between gap-2">
+      <span class="text-gray-500">Phone</span>
+      <span class="font-medium">{{ bill.customer_phone }}</span>
+    </div>
+    {% endif %}
+    <div class="flex justify-between gap-2">
+      <span class="text-gray-500">Served by</span>
+      <span class="font-medium">{{ bill.created_by }}</span>
+    </div>
+  </div>
+
+  <!-- Items as cards -->
+  <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Items</p>
+  <div class="space-y-2 mb-4">
+    {% for item in bill.bill_items %}
+    <div class="border border-gray-200 rounded-xl p-3">
+      <div class="flex justify-between items-start gap-2 mb-1">
+        <div class="min-w-0">
+          <p class="font-bold text-gray-900 break-words">{{ item.telugu_name if item.telugu_name else item.name }}</p>
+          <p class="text-xs text-gray-400">{{ item.name }}</p>
+        </div>
+        <p class="font-bold text-[#8B4513] text-base flex-shrink-0">₹{{ "%.2f"|format(item.total) }}</p>
+      </div>
+      <div class="flex gap-4 text-xs text-gray-500 border-t border-gray-100 pt-1.5 mt-1.5">
+        <span>Qty: <strong>{{ item.quantity }}</strong></span>
+        <span>Price/unit: <strong>₹{{ "%.2f"|format(item.price) }}</strong></span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if bill.balance and bill.balance > 0 %}
+  <div class="flex justify-between items-center p-3 bg-red-50 border border-red-200 rounded-xl mb-3">
+    <span class="text-red-500 font-bold text-sm">⚠️ Previous Balance</span>
+    <span class="text-red-600 font-bold">₹{{ "%.2f"|format(bill.balance) }}</span>
+  </div>
+  {% endif %}
+
+  <!-- Grand total -->
+  <div class="bg-gray-900 rounded-xl px-4 py-4 flex justify-between items-center">
+    <span class="text-white font-bold">GRAND TOTAL</span>
+    <span class="text-orange-400 font-bold text-xl" style="font-family:Georgia,serif">₹{{ "%.2f"|format(bill.total_amount) }}</span>
+  </div>
+
+  <div class="text-center mt-4 pt-4 border-t border-dashed border-gray-300 text-gray-400 italic text-sm">
+    🙏 Thank you for your purchase!
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div id="waOv" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center flex-col gap-4">
+  <div class="w-12 h-12 border-4 border-white/30 border-t-white rounded-full spin"></div>
+  <p class="text-white font-medium">Preparing image...</p>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+var bd={{ bill|tojson }};
+function dlPDF(){window.print();}
+function waShare(){
+  var ov=document.getElementById('waOv');ov.classList.remove('hidden');
+  html2canvas(document.getElementById('billCard'),{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false}).then(function(canvas){
+    ov.classList.add('hidden');
+    canvas.toBlob(function(blob){
+      var file=new File([blob],'bill-'+bd.bill_number+'.png',{type:'image/png'});
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+        navigator.share({title:'Bill '+bd.bill_number,text:'AUTO POTTERY BILL · ₹'+bd.total_amount.toFixed(2),files:[file]}).catch(function(){fbWA(canvas);});
+      }else{fbWA(canvas);}
+    },'image/png');
+  }).catch(function(){ov.classList.add('hidden');waText();});
+}
+function fbWA(canvas){
+  var a=document.createElement('a');a.download='bill-'+bd.bill_number+'.png';a.href=canvas.toDataURL('image/png');a.click();
+  setTimeout(function(){window.open('https://wa.me/?text='+encodeURIComponent('AUTO POTTERY BILL\n'+bd.bill_number+'\n'+bd.customer_name+'\n₹'+bd.total_amount.toFixed(2)+'\n\nAttach downloaded image!'),'_blank');},800);
+}
+function waText(){
+  var msg='*AUTO POTTERY BILL*\n*HK.pvt.Ltd*\n────────────\n📋 '+bd.bill_number+'\n📅 '+bd.date+' · '+bd.time+'\n👤 '+bd.customer_name+'\n────────────\n';
+  bd.bill_items.forEach(function(i){msg+='• '+(i.telugu_name||i.name)+' × '+i.quantity+' = ₹'+i.total.toFixed(2)+'\n';});
+  if(bd.balance&&bd.balance>0)msg+='⚠️ Balance = ₹'+bd.balance.toFixed(2)+'\n';
+  msg+='────────────\n💰 *Total: ₹'+bd.total_amount.toFixed(2)+'*\n\n_Thank you! 🙏_';
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+</script>
+{% endblock %}
