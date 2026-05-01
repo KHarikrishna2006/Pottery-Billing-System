@@ -35,7 +35,7 @@ class Bill(db.Model):
     total_amount   = db.Column(db.Float, nullable=False)
     balance        = db.Column(db.Float, nullable=False, default=0.0)
     created_by     = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    created_at     = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at     = db.Column(db.DateTime, default=datetime.now)
 
     def get_items(self):
         return json.loads(self.items)
@@ -147,7 +147,7 @@ def change_password():
 @app.route('/dashboard')
 @admin_required
 def dashboard():
-    today         = datetime.utcnow().date()
+    today         = datetime.now().date()
     today_bills   = Bill.query.filter(db.func.date(Bill.created_at) == today).all()
     today_revenue = sum(b.total_amount for b in today_bills)
     recent_bills  = Bill.query.order_by(Bill.created_at.desc()).limit(6).all()

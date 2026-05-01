@@ -2,67 +2,79 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"/>
-  <title>Login — AUTO POTTERY BILL</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <title>Login — Auto Pottery Bill</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet"/>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={theme:{extend:{colors:{clay:{DEFAULT:'#8B4513'}}}}}</script>
-  <style>*{-webkit-tap-highlight-color:transparent;}input{font-size:16px !important;}</style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg);}
+    input{font-size:16px!important;}
+  </style>
 </head>
-<body class="bg-[#1C1C1E] min-h-screen flex items-center justify-center p-4"
-      style="background-image:radial-gradient(ellipse at 30% 40%,rgba(255,149,0,.18) 0%,transparent 55%),radial-gradient(ellipse at 70% 70%,rgba(255,59,48,.12) 0%,transparent 55%)">
+<body>
+<div style="width:100%;max-width:360px;">
 
-  <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden">
-    <!-- Header -->
-    <div class="bg-[#1C1C1E] px-8 py-8 text-center">
-      <div class="text-5xl mb-3">🏺</div>
-      <h1 class="text-2xl font-bold text-white" style="font-family:Georgia,serif">
-        AUTO <span class="text-orange-400">POTTERY</span> BILL
-      </h1>
-      <p class="text-white/40 text-sm mt-1">HK.pvt.Ltd · Billing System</p>
+  <!-- Logo -->
+  <div class="float-up" style="text-align:center;margin-bottom:28px;">
+    <div style="width:64px;height:64px;border-radius:20px;background:var(--primary);display:inline-flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(79,70,229,.3);margin-bottom:16px;">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"><path d="M12 2C8 2 5 5 5 9c0 2.5 1 4.5 2.5 6L9 21h6l1.5-6C18 13.5 19 11.5 19 9c0-4-3-7-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>
     </div>
+    <h1 style="font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1.6rem;font-weight:800;color:var(--text);line-height:1.2;letter-spacing:-.3px;margin:0;">Auto Pottery Bill</h1>
+    <p style="color:var(--text3);font-size:.875rem;margin-top:5px;">HK.pvt.Ltd · Billing System</p>
+  </div>
 
-    <!-- Form -->
-    <div class="px-8 py-6">
-      {% if error %}
-      <div class="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">⚠️ {{ error }}</div>
-      {% endif %}
+  <!-- Card -->
+  <div class="float-up-2 c-card" style="border-radius:20px;padding:28px;">
+    {% if error %}
+    <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:10px 14px;color:#DC2626;font-size:.85rem;font-weight:500;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      {{ error }}
+    </div>
+    {% endif %}
 
-      <form method="POST" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Username</label>
-          <input name="username" type="text" required autofocus autocomplete="username"
-                 placeholder="Enter username"
-                 class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 outline-none transition-colors focus:border-orange-400 focus:ring-4 focus:ring-orange-50 placeholder-gray-300"/>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Password</label>
-          <div class="relative">
-            <input name="password" type="password" id="pw" required autocomplete="current-password"
-                   placeholder="Enter password"
-                   class="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl bg-white text-gray-900 outline-none transition-colors focus:border-orange-400 focus:ring-4 focus:ring-orange-50 placeholder-gray-300"/>
-            <button type="button" onclick="var i=document.getElementById('pw');i.type=i.type=='password'?'text':'password';"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg p-1">👁️</button>
-          </div>
-        </div>
-        <button type="submit"
-                class="w-full py-3.5 bg-[#8B4513] hover:bg-[#6B3410] text-white font-bold rounded-xl text-base transition-colors active:scale-95 mt-2">
-          🔑 Sign In
-        </button>
-      </form>
-
-      <!-- Hint -->
-      <div class="mt-5 bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-500">
-        <p class="font-bold text-gray-700 mb-2">Default Credentials</p>
-        <div class="flex items-center gap-2 mb-1">
-          <span class="text-xs font-bold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Admin</span>
-          <span>admin / admin123</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Worker</span>
-          <span>worker / worker123</span>
+    <form method="POST" autocomplete="on">
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;">Username</label>
+        <div style="position:relative;">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </span>
+          <input name="username" type="text" required autofocus autocomplete="username" placeholder="Enter your username"
+                 class="c-input" style="width:100%;padding:12px 16px 12px 40px;border-radius:12px;font-size:.9rem;"/>
         </div>
       </div>
-    </div>
+      <div style="margin-bottom:24px;">
+        <label style="display:block;font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;">Password</label>
+        <div style="position:relative;">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+          <input name="password" type="password" id="pw" required autocomplete="current-password" placeholder="Enter your password"
+                 class="c-input" style="width:100%;padding:12px 44px 12px 40px;border-radius:12px;font-size:.9rem;"/>
+          <button type="button" id="eyeBtn" onclick="togglePw()" style="position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);padding:3px;line-height:1;display:flex;align-items:center;">
+            <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%;padding:13px;border-radius:12px;font-size:.95rem;font-weight:700;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span>Sign In</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </form>
+
+    <p class="float-up-3" style="text-align:center;font-size:.75rem;color:var(--text3);margin-top:20px;">Auto Pottery Bill &copy; HK.pvt.Ltd</p>
   </div>
+</div>
+<script>
+function togglePw(){
+  var i=document.getElementById('pw');
+  var showing = i.type==='text';
+  i.type = showing ? 'password' : 'text';
+  document.getElementById('eyeIcon').innerHTML = showing
+    ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+    : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+}
+</script>
 </body>
 </html>

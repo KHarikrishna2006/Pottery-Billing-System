@@ -3,91 +3,216 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"/>
-  <meta name="theme-color" content="#1C1C1E"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <link rel="manifest" href="/manifest.json"/>
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
   <title>{% block title %}Auto Pottery Bill{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={theme:{extend:{colors:{clay:{DEFAULT:'#8B4513'}}}}}</script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif'],display:['"Plus Jakarta Sans"','Inter','sans-serif']}}}}</script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/icons.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pwa.js') }}" defer></script>
   {% block head %}{% endblock %}
 </head>
-<body class="bg-gray-100 text-gray-900">
+<body>
+
+<!-- ══ PWA: BIG INSTALL CARD (shows 2s after login) ══ -->
+<div id="pwaNotif" style="display:none;position:fixed;bottom:76px;left:12px;right:12px;z-index:500;
+     background:#FFFFFF;border-radius:20px;padding:20px;
+     box-shadow:0 8px 40px rgba(0,0,0,.18),0 2px 12px rgba(0,0,0,.08);
+     border:1px solid #E2E8F0;
+     flex-direction:column;gap:16px;
+     transform:translateY(40px);opacity:0;transition:all .38s cubic-bezier(.32,.72,0,1);">
+  <!-- Top row -->
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div style="width:52px;height:52px;border-radius:16px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(79,70,229,.35);">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"><path d="M12 2C8 2 5 5 5 9c0 2.5 1 4.5 2.5 6L9 21h6l1.5-6C18 13.5 19 11.5 19 9c0-4-3-7-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>
+    </div>
+    <div style="flex:1;min-width:0;">
+      <p style="font-weight:800;font-size:.95rem;color:#0F172A;margin:0;font-family:'Plus Jakarta Sans',Inter,sans-serif;">Install Auto Pottery Bill</p>
+      <p style="font-size:.76rem;color:#64748B;margin:3px 0 0;">Add to home screen · use like a real app</p>
+    </div>
+    <button onclick="dismissInstall()" style="width:30px;height:30px;border:none;background:#F1F5F9;border-radius:8px;cursor:pointer;color:#94A3B8;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <!-- Feature pills -->
+  <div style="display:flex;gap:7px;flex-wrap:wrap;">
+    <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:#EEF2FF;border-radius:20px;font-size:.72rem;font-weight:600;color:#4F46E5;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 12 4 9"/></svg>Works offline
+    </span>
+    <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:#ECFDF5;border-radius:20px;font-size:.72rem;font-weight:600;color:#059669;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 12 4 9"/></svg>Fast &amp; smooth
+    </span>
+    <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:#FFF7ED;border-radius:20px;font-size:.72rem;font-weight:600;color:#EA580C;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 12 4 9"/></svg>No browser bar
+    </span>
+    <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:#FDF4FF;border-radius:20px;font-size:.72rem;font-weight:600;color:#9333EA;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 12 4 9"/></svg>Home screen icon
+    </span>
+  </div>
+  <!-- Buttons -->
+  <div style="display:flex;gap:10px;">
+    <button onclick="dismissInstall()" style="flex:1;padding:11px;border:1.5px solid #E2E8F0;border-radius:12px;background:#fff;font-size:.82rem;font-weight:600;color:#64748B;cursor:pointer;font-family:Inter,sans-serif;">
+      Later
+    </button>
+    <button onclick="installApp()" style="flex:2;padding:11px;border:none;border-radius:12px;background:var(--primary);color:white;font-size:.88rem;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(79,70,229,.3);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Install App
+    </button>
+  </div>
+</div>
+
+<!-- ══ PWA: SMALL REMINDER BANNER ══ -->
+<div id="pwaBanner" style="display:none;position:fixed;bottom:76px;left:12px;right:12px;z-index:499;
+     background:#0F172A;border-radius:14px;padding:11px 14px;
+     box-shadow:0 4px 20px rgba(0,0,0,.25);
+     flex-direction:row;align-items:center;gap:10px;
+     transform:translateY(20px);opacity:0;transition:all .3s;">
+  <div style="width:34px;height:34px;border-radius:9px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M12 2C8 2 5 5 5 9c0 2.5 1 4.5 2.5 6L9 21h6l1.5-6C18 13.5 19 11.5 19 9c0-4-3-7-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>
+  </div>
+  <div style="flex:1;min-width:0;">
+    <p style="color:white;font-weight:600;font-size:.82rem;margin:0;">Add to Home Screen</p>
+    <p style="color:rgba(255,255,255,.4);font-size:.7rem;margin:2px 0 0;">Use as a native app</p>
+  </div>
+  <button onclick="installApp()" style="padding:7px 14px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0;">Install</button>
+  <button onclick="hideAll()" style="width:28px;height:28px;background:rgba(255,255,255,.1);border:none;border-radius:7px;cursor:pointer;color:rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+</div>
+
+<!-- ══ PWA: HOW TO INSTALL GUIDE ══ -->
+<div id="pwaGuide" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(15,23,42,.65);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;opacity:0;transition:opacity .28s;">
+  <div style="background:white;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:24px 22px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:44px;height:44px;border-radius:12px;background:var(--primary);display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M12 2C8 2 5 5 5 9c0 2.5 1 4.5 2.5 6L9 21h6l1.5-6C18 13.5 19 11.5 19 9c0-4-3-7-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>
+        </div>
+        <div>
+          <p style="font-weight:800;color:#0F172A;margin:0;font-size:.95rem;">How to Install</p>
+          <p style="font-size:.75rem;color:#64748B;margin:2px 0 0;">Add app to home screen</p>
+        </div>
+      </div>
+      <button onclick="closeGuide()" style="width:32px;height:32px;background:#F1F5F9;border:none;border-radius:8px;cursor:pointer;color:#94A3B8;display:flex;align-items:center;justify-content:center;padding:0;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="background:#F8FAFC;border-radius:14px;padding:16px;margin-bottom:16px;border:1px solid #E2E8F0;" id="guideSteps"></div>
+    <button onclick="closeGuide()" style="width:100%;padding:13px;background:var(--primary);color:white;border:none;border-radius:12px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">
+      Got it!
+    </button>
+    <div style="height:env(safe-area-inset-bottom,0px);min-height:8px;"></div>
+  </div>
+</div>
 
 <div class="flex min-h-screen">
 
   <!-- SIDEBAR -->
-  <aside id="sidebar" class="fixed top-0 left-0 h-full w-60 bg-[#1C1C1E] flex flex-col z-50 -translate-x-full md:translate-x-0 transition-transform duration-300">
-    <div class="px-5 py-5 border-b border-white/10">
-      <p class="font-bold text-base text-white leading-tight" style="font-family:Georgia,serif">
-        AUTO <span class="text-orange-400">POTTERY</span> BILL
-      </p>
-      <p class="text-xs text-white/30 mt-0.5 uppercase tracking-widest">HK.pvt.Ltd</p>
+  <aside id="sidebar" class="app-sidebar fixed top-0 left-0 h-full w-64 z-50 -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+    <div class="px-5 py-5" style="border-bottom:1px solid rgba(255,255,255,.07)">
+      <div class="flex items-center gap-3">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"><path d="M12 2C8 2 5 5 5 9c0 2.5 1 4.5 2.5 6L9 21h6l1.5-6C18 13.5 19 11.5 19 9c0-4-3-7-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>
+        </div>
+        <div>
+          <p class="font-display font-bold text-sm text-white leading-tight tracking-wide">AUTO POTTERY BILL</p>
+          <p class="text-xs mt-0.5" style="color:rgba(255,255,255,.3)">HK.pvt.Ltd</p>
+        </div>
+      </div>
     </div>
-    <nav class="flex-1 overflow-y-auto py-3">
+    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
       {% if session.get('role') == 'admin' %}
-        <p class="px-5 pt-3 pb-1 text-xs font-bold text-white/20 uppercase tracking-widest">Main</p>
-        <a href="{{ url_for('dashboard') }}"  class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='dashboard' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>📊</span><span data-i18n="nav_dashboard">Dashboard</span></a>
-        <a href="{{ url_for('billing') }}"    class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='billing' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>🧾</span><span data-i18n="nav_newbill">New Bill</span></a>
-        <a href="{{ url_for('history') }}"    class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='history' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>📋</span><span data-i18n="nav_allbills">All Bills</span></a>
-        <p class="px-5 pt-4 pb-1 text-xs font-bold text-white/20 uppercase tracking-widest">Manage</p>
-        <a href="{{ url_for('products') }}"   class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='products' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>🏺</span><span data-i18n="nav_products">Products</span></a>
-        <a href="{{ url_for('users') }}"      class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='users' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>👥</span><span data-i18n="nav_users">Users</span></a>
-        <p class="px-5 pt-4 pb-1 text-xs font-bold text-white/20 uppercase tracking-widest">Account</p>
-        <a href="{{ url_for('settings') }}"   class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='settings' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>⚙️</span><span data-i18n="nav_settings">Settings</span></a>
-        <a href="{{ url_for('logout') }}"     class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-400/70 border-l-[3px] border-transparent hover:text-white hover:bg-red-500/15 hover:border-red-400 transition-colors"><span>🚪</span><span data-i18n="nav_logout">Logout</span></a>
+        <p class="section-label px-3 pt-1 pb-2">Menu</p>
+        {% for ep,ic,lb,key in [('dashboard','dashboard','Dashboard','nav_dashboard'),('billing','receipt','New Bill','nav_newbill'),('history','history','All Bills','nav_allbills')] %}
+        <a href="{{ url_for(ep) }}" class="sb-item {% if request.endpoint==ep %}sb-active{% endif %}">
+          <span data-icon="{{ ic }}" data-icon-size="18"></span><span data-i18n="{{ key }}">{{ lb }}</span>
+        </a>
+        {% endfor %}
+        <p class="section-label px-3 pt-4 pb-2">Manage</p>
+        {% for ep,ic,lb,key in [('products','package','Products','nav_products'),('users','users','Users','nav_users')] %}
+        <a href="{{ url_for(ep) }}" class="sb-item {% if request.endpoint==ep %}sb-active{% endif %}">
+          <span data-icon="{{ ic }}" data-icon-size="18"></span><span data-i18n="{{ key }}">{{ lb }}</span>
+        </a>
+        {% endfor %}
+        <p class="section-label px-3 pt-4 pb-2">Account</p>
+        <a href="{{ url_for('settings') }}" class="sb-item {% if request.endpoint=='settings' %}sb-active{% endif %}">
+          <span data-icon="settings" data-icon-size="18"></span><span data-i18n="nav_settings">Settings</span>
+        </a>
+        <a href="{{ url_for('logout') }}" class="sb-item" style="color:rgba(248,113,113,.75)!important">
+          <span data-icon="logout" data-icon-size="18"></span><span data-i18n="nav_logout">Logout</span>
+        </a>
       {% else %}
-        <p class="px-5 pt-3 pb-1 text-xs font-bold text-white/20 uppercase tracking-widest">Billing</p>
-        <a href="{{ url_for('billing') }}"  class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='billing' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>🧾</span><span data-i18n="nav_newbill">New Bill</span></a>
-        <a href="{{ url_for('history') }}"  class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='history' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>📋</span><span data-i18n="nav_mybills">My Bills</span></a>
-        <p class="px-5 pt-4 pb-1 text-xs font-bold text-white/20 uppercase tracking-widest">Account</p>
-        <a href="{{ url_for('settings') }}"  class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors {% if request.endpoint=='settings' %}text-white bg-orange-500/15 border-l-[3px] border-orange-400{% else %}text-white/50 border-l-[3px] border-transparent hover:text-white hover:bg-white/5{% endif %}"><span>⚙️</span><span data-i18n="nav_settings">Settings</span></a>
-        <a href="{{ url_for('logout') }}"    class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-400/70 border-l-[3px] border-transparent hover:text-white hover:bg-red-500/15 hover:border-red-400 transition-colors"><span>🚪</span><span data-i18n="nav_logout">Logout</span></a>
+        <p class="section-label px-3 pt-1 pb-2">Billing</p>
+        {% for ep,ic,lb,key in [('billing','receipt','New Bill','nav_newbill'),('history','history','My Bills','nav_mybills'),('settings','settings','Settings','nav_settings')] %}
+        <a href="{{ url_for(ep) }}" class="sb-item {% if request.endpoint==ep %}sb-active{% endif %}">
+          <span data-icon="{{ ic }}" data-icon-size="18"></span><span data-i18n="{{ key }}">{{ lb }}</span>
+        </a>
+        {% endfor %}
+        <a href="{{ url_for('logout') }}" class="sb-item" style="color:rgba(248,113,113,.75)!important">
+          <span data-icon="logout" data-icon-size="18"></span><span data-i18n="nav_logout">Logout</span>
+        </a>
       {% endif %}
     </nav>
-    <div class="px-5 py-4 border-t border-white/10 flex items-center gap-3">
-      <div class="w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-orange-400 flex items-center justify-center text-white font-bold text-base flex-shrink-0">{{ session.get('username','?')[0].upper() }}</div>
-      <div class="min-w-0">
-        <p class="text-sm font-semibold text-white truncate">{{ session.get('username') }}</p>
-        <p class="text-xs text-white/35" data-i18n="{{ 'role_admin' if session.get('role')=='admin' else 'role_worker' }}">{{ '👑 Admin' if session.get('role')=='admin' else '🧑 Worker' }}</p>
+    <div class="px-3 pb-4">
+      <div class="px-3 py-3 rounded-xl" style="background:rgba(255,255,255,.05)">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style="background:var(--primary)">{{ session.get('username','?')[0].upper() }}</div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold text-white truncate">{{ session.get('username') }}</p>
+            <p class="text-xs" style="color:rgba(255,255,255,.35)">{{ 'Admin' if session.get('role')=='admin' else 'Worker' }}</p>
+          </div>
+        </div>
       </div>
     </div>
   </aside>
 
-  <div id="overlay" onclick="closeSb()" class="fixed inset-0 bg-black/60 z-40 hidden backdrop-blur-sm"></div>
+  <div id="overlay" onclick="closeSb()" class="fixed inset-0 z-40 hidden" style="background:rgba(0,0,0,.55);backdrop-filter:blur(4px)"></div>
 
-  <!-- MAIN -->
-  <div class="flex-1 flex flex-col min-h-screen md:ml-60">
-
-    <!-- TOPBAR -->
-    <header class="sticky top-0 z-30 h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shadow-sm">
+  <div class="flex-1 flex flex-col min-h-screen md:ml-64">
+    <header class="app-topbar sticky top-0 z-30 h-14 flex items-center justify-between px-4">
       <div class="flex items-center gap-3 min-w-0">
-        <button onclick="openSb()" class="md:hidden p-1.5 text-gray-800 text-2xl leading-none flex-shrink-0">☰</button>
-        <span class="font-bold text-sm text-gray-900 truncate" style="font-family:Georgia,serif">AUTO <span class="text-orange-500">POTTERY</span> BILL</span>
+        <button onclick="openSb()" class="md:hidden w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(255,255,255,.1);color:white;border:none;cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="flex items-center gap-2 min-w-0">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" style="flex-shrink:0;opacity:.9"><path d="M12 2C8 2 5 5 5 9c0 2.5 1 4.5 2.5 6L9 21h6l1.5-6C18 13.5 19 11.5 19 9c0-4-3-7-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>
+          <span class="font-display font-bold text-sm text-white truncate tracking-wide">AUTO POTTERY BILL</span>
+        </div>
       </div>
       <div class="flex items-center gap-2 flex-shrink-0">
-        <!-- Language quick switcher -->
-        <button onclick="toggleLangMenu()" class="text-lg leading-none" id="langFlag" title="Change Language">🌐</button>
-        <div id="langMenu" class="hidden absolute right-4 top-14 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
-          <button onclick="changeLang('en')" class="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium hover:bg-gray-50 transition-colors border-b border-gray-100">🇬🇧 English</button>
-          <button onclick="changeLang('hi')" class="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium hover:bg-gray-50 transition-colors border-b border-gray-100">🇮🇳 हिंदी</button>
-          <button onclick="changeLang('te')" class="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium hover:bg-gray-50 transition-colors border-b border-gray-100">🏺 తెలుగు</button>
-          <button onclick="changeLang('ta')" class="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium hover:bg-gray-50 transition-colors">🌺 தமிழ்</button>
+        <div class="relative" id="langWrap">
+          <button onclick="toggleLangMenu()" id="langFlag" class="flex items-center gap-1.5 h-8 px-2.5 rounded-lg" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.85);font-size:.75rem;font-weight:600;cursor:pointer;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span id="currentLangName">EN</span>
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div id="langMenu" class="hidden absolute right-0 top-10 z-50" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.15);min-width:150px;overflow:hidden;">
+            <button onclick="changeLang('en')" class="lang-opt flex items-center gap-3 w-full px-4 py-3 text-sm font-medium" style="color:var(--text);border-bottom:1px solid var(--border2);background:none;cursor:pointer;font-family:Inter,sans-serif;">🇬🇧 English</button>
+            <button onclick="changeLang('hi')" class="lang-opt flex items-center gap-3 w-full px-4 py-3 text-sm font-medium" style="color:var(--text);border-bottom:1px solid var(--border2);background:none;cursor:pointer;font-family:Inter,sans-serif;">🇮🇳 हिंदी</button>
+            <button onclick="changeLang('te')" class="lang-opt flex items-center gap-3 w-full px-4 py-3 text-sm font-medium" style="color:var(--text);border-bottom:1px solid var(--border2);background:none;cursor:pointer;font-family:Inter,sans-serif;">🏺 తెలుగు</button>
+            <button onclick="changeLang('ta')" class="lang-opt flex items-center gap-3 w-full px-4 py-3 text-sm font-medium" style="color:var(--text);background:none;cursor:pointer;font-family:Inter,sans-serif;">🌺 தமிழ்</button>
+          </div>
         </div>
-        <span class="text-xs font-bold px-2.5 py-1 rounded-full {% if session.get('role')=='admin' %}bg-orange-100 text-orange-700{% else %}bg-blue-100 text-blue-700{% endif %}" data-i18n="{{ 'role_admin' if session.get('role')=='admin' else 'role_worker' }}">
-          {{ '👑 Admin' if session.get('role')=='admin' else '🧑 Worker' }}
-        </span>
+        <div class="hidden sm:flex items-center gap-2 h-8 px-2.5 rounded-lg" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);">
+          <div class="w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-xs" style="background:var(--primary)">{{ session.get('username','?')[0].upper() }}</div>
+          <span class="text-xs font-semibold" style="color:rgba(255,255,255,.8)">{{ session.get('username') }}</span>
+        </div>
       </div>
     </header>
 
-    <main class="flex-1 p-4 pb-safe md:pb-6">
+    <main class="page-body flex-1 p-4 pb-safe md:p-6 md:pb-10">
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% for cat, msg in messages %}
-          <div class="mb-3 px-4 py-3 rounded-xl text-sm {% if cat=='danger' %}bg-red-50 text-red-600 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">{{ msg }}</div>
+        <div class="mb-4 px-4 py-3 rounded-xl text-sm font-medium fade-in
+          {% if cat=='danger' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-emerald-50 text-emerald-700 border border-emerald-200{% endif %}">
+          {{ msg }}
+        </div>
         {% endfor %}
       {% endwith %}
       {% block content %}{% endblock %}
@@ -95,57 +220,38 @@
   </div>
 </div>
 
-<!-- BOTTOM NAV -->
-<nav class="fixed bottom-0 left-0 right-0 h-nav bg-[#1C1C1E] border-t border-white/10 z-40 md:hidden">
-  <div class="flex h-20">
+<nav class="app-bnav fixed bottom-0 left-0 right-0 z-40 md:hidden h-nav">
+  <div class="flex h-16">
     {% if session.get('role') == 'admin' %}
-      <a href="{{ url_for('dashboard') }}"  class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='dashboard' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">📊</span><span data-i18n="nav_dashboard">Dash</span></a>
-      <a href="{{ url_for('billing') }}"    class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='billing' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">🧾</span><span data-i18n="nav_newbill">Bill</span></a>
-      <a href="{{ url_for('history') }}"    class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='history' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">📋</span><span data-i18n="nav_bills">Bills</span></a>
-      <a href="{{ url_for('products') }}"   class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='products' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">🏺</span><span data-i18n="nav_products">Items</span></a>
-      <a href="{{ url_for('settings') }}"   class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='settings' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">⚙️</span><span data-i18n="nav_settings">More</span></a>
+      {% set bnav=[('dashboard','dashboard','Dash','nav_dashboard'),('billing','receipt','Bill','nav_newbill'),('history','history','Bills','nav_bills'),('products','package','Items','nav_products'),('settings','settings','More','nav_settings')] %}
     {% else %}
-      <a href="{{ url_for('billing') }}"  class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='billing' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">🧾</span><span data-i18n="nav_newbill">New Bill</span></a>
-      <a href="{{ url_for('history') }}"  class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='history' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">📋</span><span data-i18n="nav_mybills">My Bills</span></a>
-      <a href="{{ url_for('settings') }}"  class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] {% if request.endpoint=='settings' %}text-orange-400 border-orange-400{% else %}text-white/40 border-transparent{% endif %}"><span class="text-2xl leading-none">⚙️</span><span data-i18n="nav_settings">Settings</span></a>
-      <a href="{{ url_for('logout') }}"    class="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider border-t-[3px] text-white/40 border-transparent"><span class="text-2xl leading-none">🚪</span><span data-i18n="nav_logout">Logout</span></a>
+      {% set bnav=[('billing','receipt','New Bill','nav_newbill'),('history','history','My Bills','nav_mybills'),('settings','settings','Settings','nav_settings'),('logout','logout','Logout','nav_logout')] %}
     {% endif %}
+    {% for ep,ic,lb,key in bnav %}
+    <a href="{{ url_for(ep) }}" class="c-bnav-item flex-1 flex flex-col items-center justify-center gap-1 {% if request.endpoint==ep %}active{% endif %}">
+      <span data-icon="{{ ic }}" data-icon-size="20"></span>
+      <span class="text-[9px] font-semibold tracking-wide uppercase" data-i18n="{{ key }}">{{ lb }}</span>
+    </a>
+    {% endfor %}
   </div>
 </nav>
 
 <script>
+var LANG_SHORT={en:'EN',hi:'HI',te:'TE',ta:'TA'};
 function openSb(){document.getElementById('sidebar').classList.remove('-translate-x-full');document.getElementById('overlay').classList.remove('hidden');}
 function closeSb(){document.getElementById('sidebar').classList.add('-translate-x-full');document.getElementById('overlay').classList.add('hidden');}
 document.querySelectorAll('#sidebar a').forEach(function(el){el.addEventListener('click',function(){if(window.innerWidth<768)closeSb();});});
-
-// Zoom block
-// Block ONLY pinch zoom (2+ fingers), never block single-finger scroll
 document.addEventListener('touchstart',function(e){if(e.touches.length>1)e.preventDefault();},{passive:false});
 document.addEventListener('touchmove',function(e){if(e.touches.length>1)e.preventDefault();},{passive:false});
-
-// Language switcher
-function toggleLangMenu(){
-  var m=document.getElementById('langMenu');
-  m.classList.toggle('hidden');
-  document.addEventListener('click',function handler(e){
-    if(!e.target.closest('#langMenu')&&!e.target.closest('#langFlag')){m.classList.add('hidden');document.removeEventListener('click',handler);}
-  });
-}
+function updateLangBtn(lang){var n=document.getElementById('currentLangName');if(n)n.textContent=LANG_SHORT[lang]||'EN';}
+function toggleLangMenu(){document.getElementById('langMenu').classList.toggle('hidden');}
 function changeLang(lang){
-  applyLang(lang);
-  document.getElementById('langMenu').classList.add('hidden');
-  // Save to cookie so server knows
-  document.cookie='apb_lang='+lang+';path=/;max-age=31536000';
-  // Show toast
-  var t=document.createElement('div');
-  t.className='fixed top-16 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm font-semibold px-4 py-2 rounded-full z-50 shadow-lg';
-  var flags={en:'🇬🇧 English',hi:'🇮🇳 हिंदी',te:'🏺 తెలుగు',ta:'🌺 தமிழ்'};
-  t.textContent=flags[lang]||lang;
-  document.body.appendChild(t);
-  setTimeout(function(){t.remove();},2000);
+  applyLang(lang);document.getElementById('langMenu').classList.add('hidden');
+  document.cookie='apb_lang='+lang+';path=/;max-age=31536000';updateLangBtn(lang);
+  showToast(({en:'English',hi:'हिंदी',te:'తెలుగు',ta:'தமிழ்'}[lang]||lang),'#4F46E5');
 }
-
-// PWA
+document.addEventListener('click',function(e){if(!e.target.closest('#langWrap'))document.getElementById('langMenu').classList.add('hidden');});
+document.addEventListener('DOMContentLoaded',function(){updateLangBtn(getLang());applyLang(getLang());renderIcons();});
 if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});
 </script>
 {% block scripts %}{% endblock %}
