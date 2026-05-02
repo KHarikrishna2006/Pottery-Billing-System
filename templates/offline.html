@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Offline — Auto Pottery Bill</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:Inter,system-ui,sans-serif;background:#F8FAFC;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+    .card{background:white;border-radius:24px;padding:36px 28px;text-align:center;max-width:340px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.08);border:1px solid #E2E8F0;}
+    .icon{width:72px;height:72px;background:#EEF2FF;border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 22px;}
+    h1{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1.35rem;font-weight:800;color:#0F172A;margin-bottom:10px;}
+    p{font-size:.88rem;color:#64748B;margin-bottom:6px;line-height:1.6;}
+    .tip{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:12px 14px;margin:18px 0;text-align:left;}
+    .tip p{font-size:.8rem;color:#475569;margin:0;}
+    .tip strong{color:#0F172A;}
+    button{width:100%;padding:13px;background:#4F46E5;color:white;border:none;border-radius:12px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;margin-top:4px;}
+    button:active{opacity:.85;}
+    .dots{display:flex;justify-content:center;gap:6px;margin-top:18px;}
+    .dot{width:6px;height:6px;border-radius:50%;background:#CBD5E1;animation:pulse 1.4s infinite;}
+    .dot:nth-child(2){animation-delay:.2s;}
+    .dot:nth-child(3){animation-delay:.4s;}
+    @keyframes pulse{0%,100%{opacity:.3;}50%{opacity:1;}}
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="1.8" stroke-linecap="round">
+      <line x1="1" y1="1" x2="23" y2="23"/>
+      <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+      <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+      <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/>
+      <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+      <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+      <line x1="12" y1="20" x2="12.01" y2="20"/>
+    </svg>
+  </div>
+  <h1>No Internet</h1>
+  <p>Auto Pottery Bill needs a connection to load.</p>
+  <p>Please check your Wi-Fi or mobile data.</p>
+
+  <div class="tip">
+    <p><strong>Already installed?</strong><br/>Open the app from your home screen icon and wait for connection.</p>
+  </div>
+
+  <button onclick="tryAgain()">
+    Try Again
+  </button>
+
+  <div class="dots">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+</div>
+
+<script>
+function tryAgain() {
+  location.reload();
+}
+/* Auto retry every 5 seconds */
+setInterval(function() {
+  fetch('/').then(function() {
+    location.href = '/';
+  }).catch(function() {});
+}, 5000);
+</script>
+</body>
+</html>

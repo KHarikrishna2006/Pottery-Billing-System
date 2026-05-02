@@ -3,96 +3,78 @@
 {% block content %}
 <div class="flex items-center justify-between mb-4 gap-3">
   <div>
-    <h1 class="text-xl font-bold text-gray-900" style="font-family:Georgia,serif">🏺 Products</h1>
-    <p class="text-xs text-gray-500">Telugu + English names</p>
+    <h1 class="font-display text-xl font-bold" style="color:var(--primary)">Products</h1>
+    <p class="text-xs mt-0.5" style="color:var(--text3)">Telugu + English names</p>
   </div>
-  <button onclick="openM('addM')" class="px-4 py-2.5 bg-[#8B4513] text-white font-bold rounded-xl text-sm active:scale-95 flex-shrink-0">➕ Add</button>
+  <button onclick="openM('addM')" class="btn-clay px-4 py-2.5 font-semibold rounded-xl text-sm active:scale-95 flex-shrink-0">➕ Add</button>
 </div>
-
-<!-- Search -->
-<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 mb-4">
+<div class="c-card border rounded-2xl p-3 mb-4">
   <form method="GET" class="flex gap-2">
-    <input name="q" type="text" value="{{ search }}" placeholder="🔍 Search products..."
-           class="flex-1 min-w-0 px-3 py-2.5 border-2 border-gray-200 rounded-xl text-sm outline-none focus:border-[#8B4513] placeholder-gray-300 transition-colors"/>
-    <button type="submit" class="px-4 py-2.5 bg-gray-100 border border-gray-200 text-gray-700 font-bold rounded-xl text-sm whitespace-nowrap">Search</button>
-    {% if search %}<a href="{{ url_for('products') }}" class="px-3 py-2.5 border-2 border-gray-200 text-gray-600 font-bold rounded-xl text-sm">✕</a>{% endif %}
+    <input name="q" type="text" value="{{ search }}" placeholder="Search products..." class="c-input flex-1 min-w-0 px-4 py-2.5 rounded-xl outline-none text-sm transition-all"/>
+    <button type="submit" class="c-subtle border px-4 py-2.5 font-semibold rounded-xl text-sm" style="color:var(--text2)">Go</button>
+    {% if search %}<a href="{{ url_for('products') }}" class="c-subtle border px-3 py-2.5 font-semibold rounded-xl text-sm" style="color:var(--text3)">✕</a>{% endif %}
   </form>
 </div>
-
-<!-- Products as cards -->
 {% if products %}
-<div class="space-y-3">
+<div class="space-y-2.5">
   {% for p in products %}
-  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 flex items-center gap-3">
+  <div class="c-card border rounded-2xl p-4 flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style="background:var(--primary-bg)">🏺</div>
     <div class="flex-1 min-w-0">
-      <p class="font-bold text-gray-900 text-lg break-words">{{ p.telugu_name }}</p>
-      <span class="inline-block text-xs font-bold bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full mt-1">{{ p.english_name }}</span>
+      <p class="font-semibold text-base break-words" style="color:var(--text)">{{ p.telugu_name }}</p>
+      <span class="text-xs font-medium px-2.5 py-0.5 rounded-full mt-1 inline-block c-tag border">{{ p.english_name }}</span>
     </div>
     <div class="flex gap-2 flex-shrink-0">
-      <button onclick="openEdit({{p.id}},'{{p.telugu_name|e}}','{{p.english_name|e}}')"
-              class="w-10 h-10 bg-gray-100 border border-gray-200 text-gray-600 rounded-xl text-base flex items-center justify-center">✏️</button>
-      <form method="POST" action="{{ url_for('delete_product',pid=p.id) }}" onsubmit="return confirm('Delete {{ p.english_name }}?')">
-        <button type="submit" class="w-10 h-10 bg-red-50 border border-red-200 text-red-500 rounded-xl text-base flex items-center justify-center">🗑️</button>
+      <button onclick="openEdit({{p.id}},'{{p.telugu_name|e}}','{{p.english_name|e}}')" class="w-9 h-9 c-subtle border rounded-xl flex items-center justify-center text-sm active:scale-95" style="color:var(--text2)">✏️</button>
+      <form method="POST" action="{{ url_for('delete_product',pid=p.id) }}" onsubmit="return confirm('Delete?')">
+        <button type="submit" class="w-9 h-9 rounded-xl flex items-center justify-center text-sm active:scale-95" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#ef4444;">🗑️</button>
       </form>
     </div>
   </div>
   {% endfor %}
 </div>
 {% else %}
-<div class="bg-white rounded-2xl border border-gray-200 shadow-sm text-center py-16 text-gray-400">
-  <p class="text-4xl mb-3">🏺</p><p class="text-sm">No products yet. Add your first one!</p>
-</div>
+<div class="c-card border rounded-2xl text-center py-16" style="color:var(--text3)"><p class="text-4xl mb-3">🏺</p><p class="text-sm">No products yet</p></div>
 {% endif %}
 
 <!-- Add Modal -->
-<div id="addM" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center" onclick="if(event.target===this)closeM('addM')">
-  <div class="modal-anim bg-white w-full rounded-t-3xl" style="max-height:90vh;overflow-y:auto;">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-      <h3 class="font-bold text-gray-800 text-lg" style="font-family:Georgia,serif">➕ Add Product</h3>
-      <button onclick="closeM('addM')" class="w-8 h-8 bg-gray-100 rounded-full text-gray-500 text-sm flex items-center justify-center">✕</button>
+<div id="addM" class="hidden fixed inset-0 c-modal-bg backdrop-blur-sm z-50 flex items-end justify-center" onclick="if(event.target===this)closeM('addM')">
+  <div class="modal-anim c-surface w-full rounded-t-3xl" style="max-height:90vh;overflow-y:auto;">
+    <div class="flex items-center justify-between px-5 py-4 border-b c-divider">
+      <h3 class="font-display font-bold" style="color:var(--text)">Add Product</h3>
+      <button onclick="closeM('addM')" class="w-8 h-8 c-subtle border rounded-full flex items-center justify-center text-sm" style="color:var(--text2)">✕</button>
     </div>
     <form method="POST" action="{{ url_for('add_product') }}" class="p-5 space-y-4">
       <div>
-        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Telugu Name (తెలుగు పేరు)</label>
-        <input name="telugu_name" type="text" required placeholder="e.g. కుండ"
-               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl outline-none focus:border-[#8B4513] focus:ring-4 focus:ring-orange-50 placeholder-gray-300 transition-colors text-xl"/>
-        <p class="text-xs text-gray-400 mt-1">Type in Telugu script</p>
+        <label class="block text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:var(--text3)">Telugu Name (తెలుగు పేరు)</label>
+        <input name="telugu_name" type="text" required placeholder="e.g. కుండ" class="c-input w-full px-4 py-3.5 rounded-xl outline-none transition-all text-xl"/>
+        <p class="text-xs mt-1" style="color:var(--text3)">Type in Telugu script</p>
       </div>
       <div>
-        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">English Pronunciation</label>
-        <input name="english_name" type="text" required placeholder="e.g. Kunda"
-               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl outline-none focus:border-[#8B4513] focus:ring-4 focus:ring-orange-50 placeholder-gray-300 transition-colors"/>
+        <label class="block text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:var(--text3)">English Pronunciation</label>
+        <input name="english_name" type="text" required placeholder="e.g. Kunda" class="c-input w-full px-4 py-3.5 rounded-xl outline-none transition-all"/>
       </div>
-      <div class="bg-orange-50 border border-orange-200 rounded-xl p-3 text-xs text-orange-700">
-        💡 Price & quantity are entered by the worker at billing time
-      </div>
+      <div class="c-clay-bg border rounded-xl p-3 text-xs" style="color:var(--primary)">💡 Price & quantity set during billing</div>
       <div class="flex gap-3 pb-4">
-        <button type="button" onclick="closeM('addM')" class="flex-1 py-3 border-2 border-gray-200 text-gray-600 font-bold rounded-xl">Cancel</button>
-        <button type="submit" class="flex-1 py-3 bg-[#8B4513] text-white font-bold rounded-xl active:scale-95">💾 Add</button>
+        <button type="button" onclick="closeM('addM')" class="flex-1 py-3.5 c-subtle border font-semibold rounded-xl" style="color:var(--text2)">Cancel</button>
+        <button type="submit" class="btn-clay flex-1 py-3.5 font-semibold rounded-xl active:scale-95">💾 Save</button>
       </div>
     </form>
   </div>
 </div>
-
 <!-- Edit Modal -->
-<div id="editM" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center" onclick="if(event.target===this)closeM('editM')">
-  <div class="modal-anim bg-white w-full rounded-t-3xl" style="max-height:90vh;overflow-y:auto;">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-      <h3 class="font-bold text-gray-800 text-lg" style="font-family:Georgia,serif">✏️ Edit Product</h3>
-      <button onclick="closeM('editM')" class="w-8 h-8 bg-gray-100 rounded-full text-gray-500 text-sm flex items-center justify-center">✕</button>
+<div id="editM" class="hidden fixed inset-0 c-modal-bg backdrop-blur-sm z-50 flex items-end justify-center" onclick="if(event.target===this)closeM('editM')">
+  <div class="modal-anim c-surface w-full rounded-t-3xl" style="max-height:90vh;overflow-y:auto;">
+    <div class="flex items-center justify-between px-5 py-4 border-b c-divider">
+      <h3 class="font-display font-bold" style="color:var(--text)">Edit Product</h3>
+      <button onclick="closeM('editM')" class="w-8 h-8 c-subtle border rounded-full flex items-center justify-center text-sm" style="color:var(--text2)">✕</button>
     </div>
     <form method="POST" id="editF" class="p-5 space-y-4">
-      <div>
-        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Telugu Name</label>
-        <input name="telugu_name" id="eT" type="text" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl outline-none focus:border-[#8B4513] transition-colors text-xl"/>
-      </div>
-      <div>
-        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">English Pronunciation</label>
-        <input name="english_name" id="eE" type="text" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl outline-none focus:border-[#8B4513] transition-colors"/>
-      </div>
+      <div><label class="block text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:var(--text3)">Telugu Name</label><input name="telugu_name" id="eT" type="text" required class="c-input w-full px-4 py-3.5 rounded-xl outline-none transition-all text-xl"/></div>
+      <div><label class="block text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:var(--text3)">English Pronunciation</label><input name="english_name" id="eE" type="text" required class="c-input w-full px-4 py-3.5 rounded-xl outline-none transition-all"/></div>
       <div class="flex gap-3 pb-4">
-        <button type="button" onclick="closeM('editM')" class="flex-1 py-3 border-2 border-gray-200 text-gray-600 font-bold rounded-xl">Cancel</button>
-        <button type="submit" class="flex-1 py-3 bg-[#8B4513] text-white font-bold rounded-xl active:scale-95">💾 Save</button>
+        <button type="button" onclick="closeM('editM')" class="flex-1 py-3.5 c-subtle border font-semibold rounded-xl" style="color:var(--text2)">Cancel</button>
+        <button type="submit" class="btn-clay flex-1 py-3.5 font-semibold rounded-xl active:scale-95">💾 Save</button>
       </div>
     </form>
   </div>
